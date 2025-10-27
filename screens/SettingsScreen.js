@@ -31,7 +31,7 @@ export default function SettingsScreen({ navigation }){
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => navigation.navigate('Home')}>
+          onPress={() => navigation.goBack()}>
           <AntDesign name="left" size={24} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>

@@ -43,6 +43,7 @@ export default function AddEntryModal({ visible, type, onClose, onSubmit }) {
     <Modal
       animationType="fade"
       transparent
+      statusBarTranslucent={true}
       visible={!!visible}
       onRequestClose={onClose}
     >
@@ -130,8 +131,9 @@ export default function AddEntryModal({ visible, type, onClose, onSubmit }) {
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    // cover the entire screen regardless of parent layout
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -139,6 +141,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     maxWidth: 420,
+    maxHeight: '90%',
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,

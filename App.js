@@ -10,13 +10,15 @@ import SignupScreen from './screens/SignupScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import Statistics_Page from './screens/Statistics_Page';
 import MonthYearPicker from './components/MonthYearPicker';
+import { FinanceProvider } from './context/FinanceContext';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <FinanceProvider>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Onboarding1" component={Onboarding1} />
         <Stack.Screen name="Onboarding2" component={Onboarding2} />
         <Stack.Screen name="Onboarding3" component={Onboarding3} />
@@ -27,7 +29,8 @@ export default function App() {
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Statistics_Page" component={Statistics_Page} />
         <Stack.Screen name="MonthYearPicker" component={MonthYearPicker} />
-      </Stack.Navigator>
-    </NavigationContainer>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </FinanceProvider>
   );
 }

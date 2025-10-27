@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useFinance } from '../context/FinanceContext';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import AddEntryModal from '../components/AddEntryModal';
 import { AntDesign, MaterialIcons, FontAwesome5, Feather } from '@expo/vector-icons';
@@ -8,22 +9,17 @@ import { Svg, Circle, G } from 'react-native-svg';
 const screenWidth = Dimensions.get('window').width;
 
 export default function HomeScreen({ navigation }) {
-  // State for actual financial data — start empty (user will add entries via modal)
-  const [financialData, setFinancialData] = useState({
-    income: 0,    // Actual income amount in pesos
-    expense: 0,   // Actual expense amount in pesos
-    balance: 0,   // Current balance
-    entries: [],  // individual entries (income/expense) added by the user
-  });
+  // Shared finance state (provided by FinanceProvider)
+  const { finance, addEntry } = useFinance();
 
   // Calculate percentages based on actual amounts
-  const total = financialData.income + financialData.expense;
-  const incomePercentage = total > 0 ? (financialData.income / total) * 100 : 0;
-  const expensePercentage = total > 0 ? (financialData.expense / total) * 100 : 0;
+  const total = (finance.income || 0) + (finance.expense || 0);
+  const incomePercentage = total > 0 ? (finance.income / total) * 100 : 0;
+  const expensePercentage = total > 0 ? (finance.expense / total) * 100 : 0;
 
   const user = {
     name: 'Kim Gaeul',
-    balance: financialData.balance,
+    balance: finance.balance,
     income: Math.round(incomePercentage),
     expense: Math.round(expensePercentage),
   };
@@ -32,24 +28,7 @@ export default function HomeScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState(null);
 
-  // Handler to accept a new entry from the modal and update totals
-  function handleAddEntry(entry) {
-    setFinancialData((prev) => {
-      const addedIncome = entry.type === 'income' ? entry.amount : 0;
-      const addedExpense = entry.type === 'expense' ? entry.amount : 0;
-      const newIncome = (prev.income || 0) + addedIncome;
-      const newExpense = (prev.expense || 0) + addedExpense;
-      const newBalance = (prev.balance || 0) + (entry.type === 'income' ? entry.amount : -entry.amount);
-      const newEntries = [...(prev.entries || []), entry];
-      return {
-        ...prev,
-        income: newIncome,
-        expense: newExpense,
-        balance: newBalance,
-        entries: newEntries,
-      };
-    });
-  }
+  // addEntry is provided by the finance context (see context/FinanceContext.js)
 
   // SVG Donut Chart calculations using your groupmate's approach
   const size = 300;
@@ -62,8 +41,8 @@ export default function HomeScreen({ navigation }) {
   // Data for the segments
   const isEmpty = total === 0;
   const data = [
-    { percentage: incomePercentage, value: financialData.income, label: 'Income', color: isEmpty ? '#CCCCCC' : '#71c45a' },
-    { percentage: expensePercentage, value: financialData.expense, label: 'Expenses', color: isEmpty ? '#CCCCCC' : '#eb4d4b' }
+    { percentage: incomePercentage, value: finance.income, label: 'Income', color: isEmpty ? '#CCCCCC' : '#71c45a' },
+    { percentage: expensePercentage, value: finance.expense, label: 'Expenses', color: isEmpty ? '#CCCCCC' : '#eb4d4b' }
   ];
 
   // Calculate circumference and segment lengths
@@ -105,7 +84,7 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Current Balance:</Text>
           <Text style={styles.balanceValue}>
-            ₱ {financialData.balance.toLocaleString()}
+            ₱ {((finance.balance || 0)).toLocaleString()}
           </Text>
         </View>
 
@@ -163,11 +142,11 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.percentageContainer}>
           <View style={styles.percentageItem}>
             <View style={[styles.percentageDot, { backgroundColor: isEmpty ? '#CCCCCC' : '#71c45a' }]} />
-            <Text style={styles.percentageText}>₱ {financialData.income.toLocaleString()} Total Monthly Income</Text>
+            <Text style={styles.percentageText}>₱ {(finance.income || 0).toLocaleString()} Total Monthly Income</Text>
           </View>
           <View style={styles.percentageItem}>
             <View style={[styles.percentageDot, { backgroundColor: isEmpty ? '#CCCCCC' : '#eb4d4b' }]} />
-            <Text style={styles.percentageText}>₱ {financialData.expense.toLocaleString()} Total Monthly Expenses</Text>
+            <Text style={styles.percentageText}>₱ {(finance.expense || 0).toLocaleString()} Total Monthly Expenses</Text>
           </View>
         </View>
       </View>
@@ -223,7 +202,7 @@ export default function HomeScreen({ navigation }) {
         visible={modalVisible}
         type={modalType}
         onClose={() => setModalVisible(false)}
-        onSubmit={handleAddEntry}
+        onSubmit={addEntry}
       />
     </View>
   );

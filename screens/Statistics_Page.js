@@ -13,6 +13,7 @@ import {
 import Svg, { G, Path, Circle, Text as SvgText } from 'react-native-svg';
 import MonthYearPicker from '../components/MonthYearPicker';             
 import { Ionicons } from '@expo/vector-icons';
+import { useFinance } from '../context/FinanceContext';
 
 /**
  * Helper to create a donut slice path.
@@ -53,15 +54,31 @@ export default function Statistics_Page({ navigation }) {
 
   /* We used react-native-svg library for the Donut Pie Chart for this screen */
 
-  // Sample data (To be changed for backend)
-  const data = useMemo(
-    () => [
-      { key: 'income', label: 'Income', value: 290000, percent: 58, color: '#7BBF6D' }, // green
-      { key: 'expenses', label: 'Expenses', value: 110000, percent: 22, color: '#E5635E' }, // red
-      { key: 'goals', label: 'Goals', value: 100000, percent: 20, color: '#F29C4A' }, // orange
-    ],
-    []
-  );
+  // Use shared finance data for Income and Expenses; keep Goals exclusive to this screen
+  const { finance } = useFinance();
+
+  const data = useMemo(() => {
+    const incomeVal = finance?.income || 0;
+    const expenseVal = finance?.expense || 0;
+    // Goals are exclusive to statistics page (Use a placeholder value for now)
+    const goalsVal = 1000;
+    const total = incomeVal + expenseVal + goalsVal;
+    const isEmpty = incomeVal + expenseVal === 0;
+
+    const make = (key, label, value, color) => ({
+      key,
+      label,
+      value,
+      percent: total > 0 ? (value / total) * 100 : 0,
+      color: isEmpty && (key === 'income' || key === 'expenses') ? '#CCCCCC' : color,
+    });
+
+    return [
+      make('income', 'Income', incomeVal, '#7BBF6D'),
+      make('expenses', 'Expenses', expenseVal, '#E5635E'),
+      make('goals', 'Goals', goalsVal, '#F29C4A'),
+    ];
+  }, [finance?.income, finance?.expense]);
 
   // Compute slices angles (startAngle, endAngle)
   const slices = useMemo(() => {
@@ -73,6 +90,14 @@ export default function Statistics_Page({ navigation }) {
       return slice;
     });
   }, [data]);
+
+  // Format a percent number to at most 2 decimal places (hundredths)
+  function formatPercent(p) {
+    if (typeof p !== 'number' || Number.isNaN(p)) return '0';
+    // Fix to 2 decimals then strip trailing zeros
+    const fixed = p.toFixed(2); // e.g. "12.30"
+    return parseFloat(fixed).toString(); // "12.3" or "12" or "12.34"
+  }
 
   // SVG donut geometry (The size of the Pie Chart)
   const size = 320;
@@ -215,7 +240,7 @@ export default function Statistics_Page({ navigation }) {
                           textAnchor="middle"
                           alignmentBaseline="middle"
                         >
-                          {`${s.percent}%`}
+                          {`${formatPercent(s.percent)}%`}
                         </SvgText>
                       );
                     })()}
