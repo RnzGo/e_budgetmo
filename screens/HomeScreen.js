@@ -210,7 +210,8 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
           
           {/* View Statistics - Orange */}
-          <TouchableOpacity style={[styles.shortcutButton, styles.statisticsButton]}>
+          <TouchableOpacity style={[styles.shortcutButton, styles.statisticsButton]} 
+                            onPress={() => navigation.navigate('Statistics_Page')}>
             <Feather name="bar-chart" size={24} color="#FFFFFF" />
             <Text style={[styles.shortcutText, styles.statisticsText]}>View Statistics</Text>
           </TouchableOpacity>

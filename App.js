@@ -8,6 +8,8 @@ import HomeScreen from './screens/HomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import Statistics_Page from './screens/Statistics_Page';
+import MonthYearPicker from './components/MonthYearPicker';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +25,8 @@ export default function App() {
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
+        <Stack.Screen name="Statistics_Page" component={Statistics_Page} />
+        <Stack.Screen name="MonthYearPicker" component={MonthYearPicker} />
       </Stack.Navigator>
     </NavigationContainer>
   );
