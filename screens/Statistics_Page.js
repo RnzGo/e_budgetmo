@@ -3,17 +3,29 @@ import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   Platform,
   StatusBar,
   Modal,
+  Dimensions,
+  PixelRatio,
 } from 'react-native';
 import Svg, { G, Path, Circle, Text as SvgText } from 'react-native-svg';
 import MonthYearPicker from '../components/MonthYearPicker';             
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { useFinance } from '../context/FinanceContext';
+
+// Responsive helpers (simple normalize based on screen width)
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const guidelineBaseWidth = 375; // iPhone 8 width baseline
+const scale = SCREEN_WIDTH / guidelineBaseWidth;
+function normalize(size) {
+  const newSize = size * scale;
+  return Math.round(PixelRatio.roundToNearestPixel(newSize));
+}
 
 /**
  * Helper to create a donut slice path.
@@ -56,11 +68,29 @@ export default function Statistics_Page({ navigation }) {
 
   // Use shared finance data for Income and Expenses; keep Goals exclusive to this screen
   const { finance } = useFinance();
+  // Helpers to move month selection
+  const prevMonth = () => setSelectedMonth((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+  const nextMonth = () => setSelectedMonth((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
 
+  // Compute monthly totals by filtering entries for selected month
   const data = useMemo(() => {
-    const incomeVal = finance?.income || 0;
-    const expenseVal = finance?.expense || 0;
-    // Goals are exclusive to statistics page (Use a placeholder value for now)
+    const entries = Array.isArray(finance?.entries) ? finance.entries : [];
+    const year = selectedMonth.getFullYear();
+    const month = selectedMonth.getMonth();
+
+    let incomeVal = 0;
+    let expenseVal = 0;
+
+    for (const e of entries) {
+      const d = e && e.date ? new Date(e.date) : null;
+      if (!d || Number.isNaN(d.getTime())) continue;
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        if (e.type === 'income') incomeVal += Number(e.amount) || 0;
+        if (e.type === 'expense') expenseVal += Number(e.amount) || 0;
+      }
+    }
+
+    // Goals are exclusive to statistics page (placeholder)
     const goalsVal = 1000;
     const total = incomeVal + expenseVal + goalsVal;
     const isEmpty = incomeVal + expenseVal === 0;
@@ -78,7 +108,7 @@ export default function Statistics_Page({ navigation }) {
       make('expenses', 'Expenses', expenseVal, '#E5635E'),
       make('goals', 'Goals', goalsVal, '#F29C4A'),
     ];
-  }, [finance?.income, finance?.expense]);
+  }, [finance?.entries, selectedMonth]);
 
   // Compute slices angles (startAngle, endAngle)
   const slices = useMemo(() => {
@@ -99,12 +129,12 @@ export default function Statistics_Page({ navigation }) {
     return parseFloat(fixed).toString(); // "12.3" or "12" or "12.34"
   }
 
-  // SVG donut geometry (The size of the Pie Chart)
-  const size = 320;
-  const cx = size / 2;
-  const cy = size / 2;
-  const outerR = 140;
-  const innerR = 75;
+  // Responsive geometry: scale chart to screen width (max 320)
+  const svgSize = Math.min(Math.round(SCREEN_WIDTH * 0.85), 320);
+  const cx = svgSize / 2;
+  const cy = svgSize / 2;
+  const outerR = Math.round(svgSize * 0.44);
+  const innerR = Math.round(svgSize * 0.22);
 
   // Top padding to avoid status bar / notch overlap:
   const topPadding =
@@ -141,19 +171,24 @@ export default function Statistics_Page({ navigation }) {
     <View style={[styles.root, { paddingTop: topPadding }]}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
 
-        {/* Header area (green) */}
+        {/* Header area */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.headerLeft} onPress={() => navigation?.goBack?.()}>
-            <Text style={styles.headerIcon}>{'‹'}</Text>
-          </TouchableOpacity>
-
-          <View style={styles.headerCenter}>
-            <View style={styles.avatar} />
-            <Text style={styles.headerTitle}>Kim Gaeul</Text>
+          <View style={styles.headerLeftGroup}>
+            <TouchableOpacity style={styles.headerLeft} onPress={() => navigation?.goBack?.()}>
+              <Text style={styles.headerIcon}>{'‹'}</Text>
+            </TouchableOpacity>
+            <View style={styles.profileContainer}>
+              <Image
+                source={require('../assets/kim.png')}
+                style={styles.profileImage}
+              />
+              <Text style={styles.userName}>Kim Gaeul</Text>
+            </View>
           </View>
-
-          <TouchableOpacity style={styles.headerRight}>
-            <View style={styles.settingsIcon} />
+          <TouchableOpacity 
+            style={styles.settingsButton}
+            onPress={() => navigation.navigate('Settings')}>
+            <AntDesign name="setting" size={30} color="white" />
           </TouchableOpacity>
         </View>
 
@@ -163,8 +198,12 @@ export default function Statistics_Page({ navigation }) {
           <Text style={styles.bigTitle}>Monthly Activity</Text>
           <View style={styles.horizontalLine} />
 
-          {/* Month & Year Picker */}
+          {/* Month & Year Picker with prev/next buttons */}
           <View style={styles.pickerRow}>
+            <TouchableOpacity onPress={prevMonth} style={styles.monthNavButton}>
+              <Ionicons name="chevron-back" size={20} color="#615E83" />
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.pickerBox}
               onPress={() => setPickerVisible(true)} // open MonthYearPicker component
@@ -175,6 +214,10 @@ export default function Statistics_Page({ navigation }) {
                 </Text>
                 <Ionicons name="chevron-down" size={18} color="#615E83" style={{ marginLeft: 6 }} />
               </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={nextMonth} style={styles.monthNavButton}>
+              <Ionicons name="chevron-forward" size={20} color="#615E83" />
             </TouchableOpacity>
           </View>
 
@@ -213,7 +256,7 @@ export default function Statistics_Page({ navigation }) {
 
         {/** ------ CHART CONTAINER ------ */}
           <View style={styles.chartContainer}>
-            <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+              <Svg width={svgSize} height={svgSize} viewBox={`0 0 ${svgSize} ${svgSize}`}>
               <G>
                 {/* subtle background circle ring */}
                 <Circle cx={cx} cy={cy} r={outerR + 6} fill="rgba(0,0,0,0.03)" />
@@ -266,9 +309,6 @@ export default function Statistics_Page({ navigation }) {
             ))}
           </View>
         </View>
-
-        {/* Bottom home indicator mimic */}
-        <View style={styles.homeIndicator} />
       </ScrollView>
     </View>
   );
@@ -284,31 +324,38 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
   },
   header: {
-    height: 72,
-    backgroundColor: '#7FB56A',
-    borderRadius: 8,
     flexDirection: 'row',
-    alignItems: 'left',
-    paddingHorizontal: 8,
     justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#6CA16B',
+    padding: 15,
+    paddingTop: 50,
+    marginBottom: 20,
+    marginTop: -50,
+    marginHorizontal: -16,
+    borderRadius: 0,
   },
   headerLeft: {
     width: 40,
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
+  headerLeftGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   headerIcon: {
     color: '#fff',
-    fontSize: 22,
+    fontSize: normalize(22),
   },
   headerCenter: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: normalize(36),
+    height: normalize(36),
+    borderRadius: normalize(18),
     backgroundColor: '#FFF0E6', // placeholder avatar color
     marginRight: 8,
   },
@@ -328,6 +375,27 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#fff', // placeholder for gear icon
     opacity: 0.95,
+  },
+  profileContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginLeft: 8, // small gap between back button and profile
+  },
+  profileImage: {
+    width: normalize(45),
+    height: normalize(45),
+    borderRadius: normalize(30),
+  },
+  userName: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: normalize(20),
+  },
+  settingsButton: {
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   card: {
@@ -350,11 +418,11 @@ const styles = StyleSheet.create({
   smallTitle: {
     color: '#8B5CF6',
     fontWeight: 'bold',
-    fontSize: 22,
+    fontSize: normalize(22),
     marginBottom: 4,
   },
   bigTitle: {
-    fontSize: 34,
+    fontSize: normalize(34),
     fontWeight: 'bold',
     fontFamily: 'Poppins-ExtraBold',
     color: '#111827',
@@ -369,9 +437,11 @@ const styles = StyleSheet.create({
   pickerRow: {
     flexDirection: 'row',
     marginBottom: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pickerBox: {
-    width: 170,
+    width: normalize(170),
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 8,
@@ -380,10 +450,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  monthNavButton: {
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(6),
+    marginHorizontal: normalize(8),
+    borderRadius: normalize(8),
+  },
   pickerText: {
-    fontSize: 16,
+    fontSize: normalize(16),
     color: '#111827',
-    paddingVertical: 14,
+    paddingVertical: normalize(14),
     fontWeight: '600',
   },
   chartContainer: {
@@ -401,27 +477,27 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   legendDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 10,
+    width: normalize(12),
+    height: normalize(12),
+    borderRadius: normalize(6),
+    marginRight: normalize(10),
   },
   legendText: {
     flex: 1,
     color: '#615E83',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: normalize(16),
   },
   legendValue: {
     color: '#6B7280',
-    fontSize: 16,
+    fontSize: normalize(16),
   },
   homeIndicator: {
-    height: 6,
+    height: normalize(6),
     alignSelf: 'center',
     backgroundColor: '#787878',
-    width: 100,
-    borderRadius: 6,
+    width: normalize(100),
+    borderRadius: normalize(6),
     marginTop: 18,
   },
 
