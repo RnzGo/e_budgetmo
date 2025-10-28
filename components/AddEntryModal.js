@@ -25,10 +25,16 @@ export default function AddEntryModal({ visible, type, onClose, onSubmit }) {
       Alert.alert('Invalid amount', 'Please enter a valid amount greater than zero.');
       return;
     }
+    // require a valid date string
+    const parsedDate = new Date(date);
+    if (!date || Number.isNaN(parsedDate.getTime())) {
+      Alert.alert('Invalid date', 'Please enter a valid date in YYYY-MM-DD format.');
+      return;
+    }
 
     const entry = {
       type: type === 'expense' ? 'expense' : 'income',
-      date: date || new Date().toISOString(),
+      date: parsedDate.toISOString(),
       category: category || 'Uncategorized',
       amount: parsed,
       note: note || '',
@@ -56,10 +62,10 @@ export default function AddEntryModal({ visible, type, onClose, onSubmit }) {
           <View style={styles.content}>
             {/* Date Form */}
             <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Date:</Text>
+              <Text style={styles.label}><Text style={styles.required}>*</Text> Date:</Text>
               <TextInput
                 style={styles.input}
-                placeholder="YYYY-MM-DD or leave blank"
+                placeholder="YYYY-MM-DD"
                 placeholderTextColor="#999"
                 value={date}
                 onChangeText={setDate}
@@ -80,7 +86,7 @@ export default function AddEntryModal({ visible, type, onClose, onSubmit }) {
 
             {/* Amount Form */}
             <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Amount:</Text>
+              <Text style={styles.label}><Text style={styles.required}>*</Text> Amount:</Text>
               <TextInput
                 style={styles.input}
                 placeholder="Enter Amount"
@@ -115,13 +121,33 @@ export default function AddEntryModal({ visible, type, onClose, onSubmit }) {
               <Text style={styles.actionText}>Cancel</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.actionButton, styles.submitButton]}
-              onPress={handleSubmit}
-              accessibilityLabel="Submit"
-            >
-              <Text style={[styles.actionText, { color: '#fff' }]}>{type === 'expense' ? 'Add Expense' : 'Add Income'}</Text>
-            </TouchableOpacity>
+            {(() => {
+              // validation for enabling submit button
+              const parsedAmt = parseFloat(amount);
+              const isAmountValid = !Number.isNaN(parsedAmt) && parsedAmt > 0;
+              const isDateValid = date && !Number.isNaN(new Date(date).getTime());
+              const submitDisabled = !(isAmountValid && isDateValid);
+
+              return (
+                <TouchableOpacity
+                  style={[
+                    styles.actionButton,
+                    submitDisabled ? styles.disabledButton : styles.submitButton,
+                  ]}
+                  onPress={handleSubmit}
+                  accessibilityLabel="Submit"
+                  accessibilityState={{ disabled: submitDisabled }}
+                  disabled={submitDisabled}
+                >
+                  <Text style={[
+                    styles.actionText,
+                    submitDisabled ? styles.disabledText : { color: '#fff' },
+                  ]}>
+                    {type === 'expense' ? 'Add Expense' : 'Add Income'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })()}
           </View>
         </View>
       </View>
@@ -212,9 +238,20 @@ const styles = StyleSheet.create({
   submitButton: {
     backgroundColor: '#4CAF50',
   },
+  disabledButton: {
+    backgroundColor: '#C8C8C8',
+  },
   actionText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
+  },
+  disabledText: {
+    color: '#6B6B6B',
+  },
+  required: {
+    color: '#E53E3E',
+    marginRight: 6,
+    fontWeight: '700',
   },
 });
