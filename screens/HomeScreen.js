@@ -177,7 +177,8 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
           
           {/* View Goals - Blue */}
-          <TouchableOpacity style={[styles.shortcutButton, styles.goalsButton]}>
+          <TouchableOpacity style={[styles.shortcutButton, styles.goalsButton]}
+                            onPress={() => navigation.navigate('GoalsScreen')}>
             <FontAwesome5 name="bullseye" size={24} color="#FFFFFF" />
             <Text style={[styles.shortcutText, styles.goalsText]}>View Goals</Text>
           </TouchableOpacity>

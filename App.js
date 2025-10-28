@@ -9,6 +9,7 @@ import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import Statistics_Page from './screens/Statistics_Page';
+import GoalsScreen from './screens/GoalsScreen';
 import MonthYearPicker from './components/MonthYearPicker';
 import { FinanceProvider } from './context/FinanceContext';
 
@@ -28,6 +29,7 @@ export default function App() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Statistics_Page" component={Statistics_Page} />
+        <Stack.Screen name="GoalsScreen" component={GoalsScreen} />
         <Stack.Screen name="MonthYearPicker" component={MonthYearPicker} />
         </Stack.Navigator>
       </NavigationContainer>
