@@ -17,6 +17,7 @@ import Svg, { G, Path, Circle, Text as SvgText } from 'react-native-svg';
 import MonthYearPicker from '../components/MonthYearPicker';             
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { useFinance } from '../context/FinanceContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Responsive helpers (simple normalize based on screen width)
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -68,13 +69,36 @@ export default function Statistics_Page({ navigation }) {
 
   // Use shared finance data for Income and Expenses; keep Goals exclusive to this screen
   const { finance } = useFinance();
+  // Local persisted goals (stored by GoalsScreen in AsyncStorage)
+  const [goals, setGoals] = useState([]);
+
+  // Load goals from AsyncStorage so we can sum their "current" amounts
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem('@e_budgetmo_goals');
+        if (!mounted) return;
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) setGoals(parsed);
+        }
+      } catch (err) {
+        // silently ignore - keep goals as []
+        console.warn('Failed to load goals for Statistics page', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
   // Helpers to move month selection
   const prevMonth = () => setSelectedMonth((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
   const nextMonth = () => setSelectedMonth((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
 
   // Compute monthly totals by filtering entries for selected month
   const data = useMemo(() => {
-    const entries = Array.isArray(finance?.entries) ? finance.entries : [];
+    const entries = Array.isArray(finance?.entries)
+      ? finance.entries.filter((e) => e && (e.type === 'income' || e.type === 'expense'))
+      : [];
     const year = selectedMonth.getFullYear();
     const month = selectedMonth.getMonth();
 
@@ -90,25 +114,47 @@ export default function Statistics_Page({ navigation }) {
       }
     }
 
-    // Goals are exclusive to statistics page (placeholder)
-    const goalsVal = 1000;
+    // Goals: sum only the amounts added to goals during the selected month.
+    // We record goal transactions when users add/withdraw in GoalsScreen; each transaction has { date, amount }.
+    const goalsVal = Array.isArray(goals)
+      ? goals.reduce((acc, g) => {
+          const txs = Array.isArray(g.transactions) ? g.transactions : [];
+          const monthSum = txs.reduce((s, t) => {
+            if (!t || !t.date) return s;
+            const td = new Date(t.date);
+            if (Number.isNaN(td.getTime())) return s;
+            if (td.getFullYear() === year && td.getMonth() === month) {
+              const amt = Number(t.amount) || 0;
+              // only count positive additions toward goals for statistics
+              return s + (amt > 0 ? amt : 0);
+            }
+            return s;
+          }, 0);
+          return acc + monthSum;
+        }, 0)
+      : 0;
     const total = incomeVal + expenseVal + goalsVal;
     const isEmpty = incomeVal + expenseVal === 0;
 
-    const make = (key, label, value, color) => ({
-      key,
-      label,
-      value,
-      percent: total > 0 ? (value / total) * 100 : 0,
-      color: isEmpty && (key === 'income' || key === 'expenses') ? '#CCCCCC' : color,
-    });
+    const make = (key, label, value, color) => {
+      let finalColor = color;
+      if (isEmpty && (key === 'income' || key === 'expenses')) finalColor = '#CCCCCC';
+      if (key === 'goals' && Number(value) === 0) finalColor = '#CCCCCC';
+      return {
+        key,
+        label,
+        value,
+        percent: total > 0 ? (value / total) * 100 : 0,
+        color: finalColor,
+      };
+    };
 
     return [
       make('income', 'Income', incomeVal, '#7BBF6D'),
       make('expenses', 'Expenses', expenseVal, '#E5635E'),
       make('goals', 'Goals', goalsVal, '#F29C4A'),
     ];
-  }, [finance?.entries, selectedMonth]);
+  }, [finance?.entries, selectedMonth, goals]);
 
   // Compute slices angles (startAngle, endAngle)
   const slices = useMemo(() => {
@@ -120,6 +166,16 @@ export default function Statistics_Page({ navigation }) {
       return slice;
     });
   }, [data]);
+
+  // Remaining balance calculation: compute as this month's income minus
+  // this month's expenses and this month's goal additions. This matches
+  // the expected example: remaining = income - expenses - goals
+  const remainingBalance = (() => {
+    const incomeMonth = data.find((d) => d.key === 'income')?.value || 0;
+    const expenseMonth = data.find((d) => d.key === 'expenses')?.value || 0;
+    const goalsMonth = data.find((d) => d.key === 'goals')?.value || 0;
+    return incomeMonth - expenseMonth - goalsMonth;
+  })();
 
   // Format a percent number to at most 2 decimal places (hundredths)
   function formatPercent(p) {
@@ -168,29 +224,29 @@ export default function Statistics_Page({ navigation }) {
   };
 
   return (
-    <View style={[styles.root, { paddingTop: topPadding }]}>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-
-        {/* Header area */}
-        <View style={styles.header}>
-          <View style={styles.headerLeftGroup}>
-            <TouchableOpacity style={styles.headerLeft} onPress={() => navigation?.goBack?.()}>
-              <Text style={styles.headerIcon}>{'‹'}</Text>
-            </TouchableOpacity>
-            <View style={styles.profileContainer}>
-              <Image
-                source={require('../assets/kim.png')}
-                style={styles.profileImage}
-              />
-              <Text style={styles.userName}>Kim Gaeul</Text>
-            </View>
-          </View>
-          <TouchableOpacity 
-            style={styles.settingsButton}
-            onPress={() => navigation.navigate('Settings')}>
-            <AntDesign name="setting" size={30} color="white" />
+    <View style={[styles.root, { paddingTop: topPadding }]}> 
+      {/* Header area (fixed) */}
+      <View style={styles.header}>
+        <View style={styles.headerLeftGroup}>
+          <TouchableOpacity style={styles.headerLeft} onPress={() => navigation?.goBack?.()}>
+            <Text style={styles.headerIcon}>{'‹'}</Text>
           </TouchableOpacity>
+          <View style={styles.profileContainer}>
+            <Image
+              source={require('../assets/kim.png')}
+              style={styles.profileImage}
+            />
+            <Text style={styles.userName}>Kim Gaeul</Text>
+          </View>
         </View>
+        <TouchableOpacity 
+          style={styles.settingsButton}
+          onPress={() => navigation.navigate('Settings')}>
+          <AntDesign name="setting" size={30} color="white" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
 
         {/* Card */}
         <View style={styles.card}>
@@ -307,6 +363,11 @@ export default function Statistics_Page({ navigation }) {
                 </Text>
               </View>
             ))}
+            {/* Remaining balance after this month's expenses and goal additions */}
+            <View style={styles.remainingRow}>
+              <Text style={styles.remainingLabel}>Remaining Balance</Text>
+              <Text style={styles.remainingValue}>{remainingBalance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</Text>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -328,11 +389,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#6CA16B',
-    padding: 15,
-    paddingTop: 50,
-    marginBottom: 20,
-    marginTop: -50,
-    marginHorizontal: -16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 12,
     borderRadius: 0,
   },
   headerLeft: {
@@ -479,7 +538,9 @@ const styles = StyleSheet.create({
   legendDot: {
     width: normalize(12),
     height: normalize(12),
-    borderRadius: normalize(6),
+    borderRadius: 999, // ensure perfectly round on all screen densities
+    borderWidth: 0.5,
+    borderColor: '#FFFFFF',
     marginRight: normalize(10),
   },
   legendText: {
@@ -490,6 +551,25 @@ const styles = StyleSheet.create({
   },
   legendValue: {
     color: '#6B7280',
+    fontSize: normalize(16),
+  },
+  remainingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#E5E7EB',
+    marginTop: 8,
+  },
+  remainingLabel: {
+    color: '#374151',
+    fontWeight: '700',
+    fontSize: normalize(16),
+  },
+  remainingValue: {
+    color: '#111827',
+    fontWeight: '800',
     fontSize: normalize(16),
   },
   homeIndicator: {

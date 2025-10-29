@@ -30,7 +30,7 @@ export default function AboutScreen({ navigation }){
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Developed by:</Text>
-          <Text style={styles.team}>Star Players from CS21S3 of</Text>
+          <Text style={styles.team}>StarPlayers from CS21S3 of</Text>
           <Text style={styles.team}>Technological Institute of the Philippines</Text>
         </View>
 
@@ -44,7 +44,7 @@ export default function AboutScreen({ navigation }){
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.copyright}>© 2025 SmartBudget Team. All rights reserved.</Text>
+          <Text style={styles.copyright}>© 2025 StarPlayers Team. All rights reserved.</Text>
           <Text style={styles.disclaimer}>
             This app is a student project and not intended for commercial use.
           </Text>

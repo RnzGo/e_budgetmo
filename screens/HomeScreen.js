@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import AddEntryModal from '../components/AddEntryModal';
+import AddIncomeModal from '../components/AddIncomeModal';
+import AddExpenseModal from '../components/AddExpenseModal';
 import { AntDesign, MaterialIcons, FontAwesome5, Feather } from '@expo/vector-icons';
 import { Dimensions } from 'react-native';
 import { Svg, Circle, G } from 'react-native-svg';
@@ -24,9 +25,9 @@ export default function HomeScreen({ navigation }) {
     expense: Math.round(expensePercentage),
   };
 
-  // Modal state for adding entries
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalType, setModalType] = useState(null);
+  // Modal state for adding entries (separate modals for income and expense)
+  const [incomeModalVisible, setIncomeModalVisible] = useState(false);
+  const [expenseModalVisible, setExpenseModalVisible] = useState(false);
 
   // addEntry is provided by the finance context (see context/FinanceContext.js)
 
@@ -161,7 +162,7 @@ export default function HomeScreen({ navigation }) {
           {/* Add Income - Green */}
           <TouchableOpacity
             style={[styles.shortcutButton, styles.incomeButton]}
-            onPress={() => { setModalType('income'); setModalVisible(true); }}
+            onPress={() => { setIncomeModalVisible(true); }}
           >
             <MaterialIcons name="add-circle" size={28} color="#FFFFFF" />
             <Text style={[styles.shortcutText, styles.incomeText]}>Add Income</Text>
@@ -170,7 +171,7 @@ export default function HomeScreen({ navigation }) {
           {/* Add Expenses - Red */}
           <TouchableOpacity
             style={[styles.shortcutButton, styles.expenseButton]}
-            onPress={() => { setModalType('expense'); setModalVisible(true); }}
+            onPress={() => { setExpenseModalVisible(true); }}
           >
             <MaterialIcons name="remove-circle" size={28} color="#FFFFFF" />
             <Text style={[styles.shortcutText, styles.expenseText]}>Add Expenses</Text>
@@ -185,7 +186,7 @@ export default function HomeScreen({ navigation }) {
           
           {/* Transactions - Purple */}
           <TouchableOpacity style={[styles.shortcutButton, styles.transactionsButton]}
-                            onPress={() => navigation.navigate('TransactionScreen')}>
+                            onPress={() => navigation.navigate('TransactionsScreen')}>
             <MaterialIcons name="list-alt" size={24} color="#FFFFFF" />
             <Text style={[styles.shortcutText, styles.transactionsText]}>Transactions</Text>
           </TouchableOpacity>
@@ -199,12 +200,23 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Add Entry Modal (income / expense) */}
-      <AddEntryModal
-        visible={modalVisible}
-        type={modalType}
-        onClose={() => setModalVisible(false)}
-        onSubmit={addEntry}
+      {/* Add Entry Modals (separated) */}
+      <AddIncomeModal
+        visible={incomeModalVisible}
+        onClose={() => setIncomeModalVisible(false)}
+        onSubmit={(payload) => {
+          addEntry(payload);
+          setIncomeModalVisible(false);
+        }}
+      />
+
+      <AddExpenseModal
+        visible={expenseModalVisible}
+        onClose={() => setExpenseModalVisible(false)}
+        onSubmit={(payload) => {
+          addEntry(payload);
+          setExpenseModalVisible(false);
+        }}
       />
     </View>
   );
