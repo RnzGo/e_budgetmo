@@ -5,31 +5,30 @@ import { FontAwesome5 } from '@expo/vector-icons';
 // Modal component for adding new financial goals
 export default function AddGoalsModal({ visible, onClose, onSubmit }) {
   // --- State variables for goal details ---
-  const [title, setTitle] = useState('');
-  const [dueDate, setDueDate] = useState(''); // stores goal due date (expected format: YYYY-MM-DD)
-  const [targetAmount, setTargetAmount] = useState(''); // stores the target savings amount
-  const [category, setCategory] = useState(''); // stores optional goal category
-  const [note, setNote] = useState(''); // stores optional notes about the goal
+  const [goalTitle, setGoalTitle] = useState('');
+  const [goalDueDate, setGoalDueDate] = useState(''); // stores goal due date (expected format: YYYY-MM-DD)
+  const [goalTargetAmount, setGoalTargetAmount] = useState(''); // stores the target savings amount
+  const [goalCategory, setGoalCategory] = useState(''); // stores optional goal category
+  const [goalNote, setGoalNote] = useState(''); // stores optional notes about the goal
 
   // useEffect: Resets all input fields whenever the modal becomes hidden
   useEffect(() => {
     if (!visible) {
-      setTitle('');
-      setDueDate('');
-      setTargetAmount('');
-      setCategory('');
-      setNote('');
+      setGoalTitle('');
+      setGoalDueDate('');
+      setGoalTargetAmount('');
+      setGoalCategory('');
+      setGoalNote('');
     }
   }, [visible]);
 
   // handleSubmit: Validates input fields and constructs a new goal object
   // then passes it back via onSubmit() and closes the modal
   function handleSubmit() {
-    const parsedTarget = parseFloat(targetAmount);
-    const parsedCurrent = parseFloat(currentAmount) || 0;
+    const parsedTarget = parseFloat(goalTargetAmount);
 
     // --- Validate title ---
-    if (!title.trim()) {
+    if (!goalTitle.trim()) {
       Alert.alert('Missing title', 'Please enter a title for the goal.');
       return;
     }
@@ -41,8 +40,8 @@ export default function AddGoalsModal({ visible, onClose, onSubmit }) {
     }
 
     // --- Validate due date ---
-    const parsedDate = new Date(dueDate);
-    if (!dueDate || Number.isNaN(parsedDate.getTime())) {
+    const parsedDate = new Date(goalDueDate);
+    if (!goalDueDate || Number.isNaN(parsedDate.getTime())) {
       Alert.alert('Invalid date', 'Please enter a valid due date in YYYY-MM-DD format.');
       return;
     }
@@ -50,13 +49,14 @@ export default function AddGoalsModal({ visible, onClose, onSubmit }) {
     // --- Construct goal object ---
     const goal = {
       id: `${Date.now()}`, // unique goal ID based on timestamp
-      title: title.trim(),
+      title: goalTitle.trim(),
+      category: goalCategory || 'Uncategorized',
       due: parsedDate.toISOString(),
       target: parsedTarget,
-      current: parsedCurrent,
-      progress: parsedTarget > 0 ? Math.min(parsedCurrent / parsedTarget, 1) : 0,
-      color: '#22C55E', // default color
-      note: note || '',
+      current: 0, // default to 0
+      progress: 0, // default to 0
+      color: '#22C55E',
+      note: goalNote || '',
     };
 
     // --- Send goal data back to parent component ---
@@ -66,7 +66,6 @@ export default function AddGoalsModal({ visible, onClose, onSubmit }) {
     if (typeof onClose === 'function') onClose();
   }
 
-// Main Format of the Modal
   return (
     <Modal
       animationType="fade"
@@ -83,7 +82,6 @@ export default function AddGoalsModal({ visible, onClose, onSubmit }) {
           </View>
 
           <View style={styles.content}>
-            
             {/* Title */}
             <View style={styles.fieldContainer}>
               <Text style={styles.label}><Text style={styles.required}>*</Text> Title:</Text>
@@ -91,8 +89,8 @@ export default function AddGoalsModal({ visible, onClose, onSubmit }) {
                 style={styles.input}
                 placeholder="Goal title"
                 placeholderTextColor="#999"
-                value={title}
-                onChangeText={setTitle}
+                value={goalTitle}
+                onChangeText={setGoalTitle}
               />
             </View>
 
@@ -103,8 +101,8 @@ export default function AddGoalsModal({ visible, onClose, onSubmit }) {
                 style={styles.input}
                 placeholder="Add Category"
                 placeholderTextColor="#999"
-                value={category}
-                onChangeText={setCategory}
+                value={goalCategory}
+                onChangeText={setGoalCategory}
               />
             </View>
 
@@ -116,8 +114,8 @@ export default function AddGoalsModal({ visible, onClose, onSubmit }) {
                 placeholder="Enter target amount"
                 placeholderTextColor="#999"
                 keyboardType="numeric"
-                value={targetAmount}
-                onChangeText={setTargetAmount}
+                value={goalTargetAmount}
+                onChangeText={setGoalTargetAmount}
               />
             </View>
 
@@ -128,8 +126,8 @@ export default function AddGoalsModal({ visible, onClose, onSubmit }) {
                 style={styles.input}
                 placeholder="YYYY-MM-DD"
                 placeholderTextColor="#999"
-                value={dueDate}
-                onChangeText={setDueDate}
+                value={goalDueDate}
+                onChangeText={setGoalDueDate}
               />
             </View>
 
@@ -142,8 +140,8 @@ export default function AddGoalsModal({ visible, onClose, onSubmit }) {
                 placeholderTextColor="#999"
                 multiline
                 numberOfLines={4}
-                value={note}
-                onChangeText={setNote}
+                value={goalNote}
+                onChangeText={setGoalNote}
               />
             </View>
           </View>
@@ -158,10 +156,10 @@ export default function AddGoalsModal({ visible, onClose, onSubmit }) {
             </TouchableOpacity>
 
             {(() => {
-              const parsedTarget = parseFloat(targetAmount);
-              const isTitleValid = title.trim().length > 0;
+              const parsedTarget = parseFloat(goalTargetAmount);
+              const isTitleValid = goalTitle.trim().length > 0;
               const isTargetValid = !Number.isNaN(parsedTarget) && parsedTarget > 0;
-              const isDateValid = dueDate && !Number.isNaN(new Date(dueDate).getTime());
+              const isDateValid = goalDueDate && !Number.isNaN(new Date(goalDueDate).getTime());
               const submitDisabled = !(isTitleValid && isTargetValid && isDateValid);
 
               return (
@@ -193,7 +191,6 @@ export default function AddGoalsModal({ visible, onClose, onSubmit }) {
 
 const styles = StyleSheet.create({
   overlay: {
-    // cover the entire screen regardless of parent layout
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'center',

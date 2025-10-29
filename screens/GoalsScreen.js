@@ -1,9 +1,9 @@
+// GoalsScreen.js
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity, Image } from 'react-native';
+import { Ionicons , FontAwesome5 } from '@expo/vector-icons';
 import AddGoalsModal from '../components/AddGoalsModal';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
-// Mock data: can be changed during backend
 const goalsData = [
   { id: 4, title: 'Goal 4', due: '23/07/25', progress: 1, current: 5000, target: 5000, color: '#3B82F6' },
   { id: 3, title: 'Goal 3', due: '12/12/25', progress: 0, current: 0, target: 10000, color: '#22C55E' },
@@ -12,8 +12,24 @@ const goalsData = [
 ];
 
 export default function GoalsScreen() {
-  // State for modal visibility
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalType, setModalType] = useState(null);
+  const [goals, setGoals] = useState(goalsData);
+
+  function handleAddGoal(newGoal) {
+    // normalize incoming goal and add to local list
+    const goal = {
+      id: newGoal.id || Date.now(),
+      title: newGoal.title || 'New Goal',
+      due: new Date(newGoal.dueDate || newGoal.due || Date.now()).toLocaleDateString(),
+      progress: newGoal.progress ?? 0,
+      current: newGoal.current ?? 0,
+      target: Number(newGoal.targetAmount) || Number(newGoal.target) || 0,
+      color: newGoal.color || '#3B82F6',
+    };
+
+    setGoals((prev) => [goal, ...prev]);
+  }
 
   return (
     <View style={styles.root}>
@@ -34,7 +50,7 @@ export default function GoalsScreen() {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          {goalsData.map((goal) => (
+          {goals.map((goal) => (
             <View key={goal.id} style={styles.goalCard}>
               <View style={styles.goalRow}>
                 <Text style={styles.goalTitle}>{goal.title}</Text>
@@ -50,28 +66,38 @@ export default function GoalsScreen() {
                 />
               </View>
 
+              {/** ----- Goal amount text ------ */}      
               <Text style={styles.goalAmount}>
                 {goal.current.toLocaleString()}/{goal.target.toLocaleString()}
               </Text>
             </View>
           ))}
         </ScrollView>
-
-        {/* Add Goals Button */}
+          
+        {/** ----- Add Goals Button ------ */}
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => setModalVisible(true)} // open modal
+          onPress={() => {
+            setModalType('add');
+            setModalVisible(true);
+          }}
+          accessibilityLabel="Add Goals"
         >
           <Ionicons name="add-circle" size={18} color="#fff" />
           <Text style={styles.addText}>Add Goals</Text>
         </TouchableOpacity>
-      </View>
 
-      {/* Render the modal */}
-      <AddGoalsModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)} // close modal
-      />
+        {/* AddGoalModal rendered as a pop-up */}
+        <AddGoalsModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onSubmit={(goal) => {
+            handleAddGoal(goal);
+            setModalVisible(false);
+          }}
+        />
+        
+      </View>
     </View>
   );
 }
@@ -106,8 +132,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-
-
   content: {
     backgroundColor: '#FAF9F6',
     borderRadius: 23,
@@ -142,6 +166,7 @@ const styles = StyleSheet.create({
     fontSize: 34,
     fontWeight: '900',
     color: '#EA580C',
+    marginLeft: 8,
   },
   goalCard: {
     backgroundColor: '#FAF9F6',
@@ -203,4 +228,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
