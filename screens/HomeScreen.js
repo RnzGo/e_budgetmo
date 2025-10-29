@@ -184,7 +184,8 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
           
           {/* Transactions - Purple */}
-          <TouchableOpacity style={[styles.shortcutButton, styles.transactionsButton]}>
+          <TouchableOpacity style={[styles.shortcutButton, styles.transactionsButton]}
+                            onPress={() => navigation.navigate('TransactionScreen')}>
             <MaterialIcons name="list-alt" size={24} color="#FFFFFF" />
             <Text style={[styles.shortcutText, styles.transactionsText]}>Transactions</Text>
           </TouchableOpacity>

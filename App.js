@@ -11,6 +11,7 @@ import SettingsScreen from './screens/SettingsScreen';
 import AboutScreen from './screens/AboutScreen';
 import Statistics_Page from './screens/Statistics_Page';
 import GoalsScreen from './screens/GoalsScreen';
+import TransactionScreen from './screens/TransactionScreen';
 import MonthYearPicker from './components/MonthYearPicker';
 import { FinanceProvider } from './context/FinanceContext';
 
@@ -32,6 +33,7 @@ export default function App() {
         <Stack.Screen name="About" component={AboutScreen} />
         <Stack.Screen name="Statistics_Page" component={Statistics_Page} />
         <Stack.Screen name="GoalsScreen" component={GoalsScreen} />
+        <Stack.Screen name="TransactionScreen" component={TransactionScreen} />
         <Stack.Screen name="MonthYearPicker" component={MonthYearPicker} />
         </Stack.Navigator>
       </NavigationContainer>
