@@ -1,7 +1,8 @@
 // GoalsScreen.js
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity, Image } from 'react-native';
 import { Ionicons , FontAwesome5 } from '@expo/vector-icons';
+import AddGoalModal from '../components/AddGoalModal';
 
 const goalsData = [
   { id: 4, title: 'Goal 4', due: '23/07/25', progress: 1, current: 5000, target: 5000, color: '#3B82F6' },
@@ -11,6 +12,25 @@ const goalsData = [
 ];
 
 export default function GoalsScreen() {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalType, setModalType] = useState(null);
+  const [goals, setGoals] = useState(goalsData);
+
+  function handleAddGoal(newGoal) {
+    // normalize incoming goal and add to local list
+    const goal = {
+      id: newGoal.id || Date.now(),
+      title: newGoal.title || 'New Goal',
+      due: new Date(newGoal.dueDate || newGoal.due || Date.now()).toLocaleDateString(),
+      progress: newGoal.progress ?? 0,
+      current: newGoal.current ?? 0,
+      target: Number(newGoal.targetAmount) || Number(newGoal.target) || 0,
+      color: newGoal.color || '#3B82F6',
+    };
+
+    setGoals((prev) => [goal, ...prev]);
+  }
+
   return (
     <View style={styles.root}>
       {/* HEADER */}
@@ -30,7 +50,7 @@ export default function GoalsScreen() {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          {goalsData.map((goal) => (
+          {goals.map((goal) => (
             <View key={goal.id} style={styles.goalCard}>
               <View style={styles.goalRow}>
                 <Text style={styles.goalTitle}>{goal.title}</Text>
@@ -54,11 +74,28 @@ export default function GoalsScreen() {
           ))}
         </ScrollView>
           
-        {/** ----- Add Goals Button ------ */}  
-        <TouchableOpacity style={styles.addButton}>
-            <Ionicons name="add-circle" size={18} color="#fff" />
-            <Text style={styles.addText}>Add Goals</Text>
+        {/** ----- Add Goals Button ------ */}
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => {
+            setModalType('add');
+            setModalVisible(true);
+          }}
+          accessibilityLabel="Add Goals"
+        >
+          <Ionicons name="add-circle" size={18} color="#fff" />
+          <Text style={styles.addText}>Add Goals</Text>
         </TouchableOpacity>
+
+        {/* AddGoalModal rendered as a pop-up */}
+        <AddGoalModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onSubmit={(goal) => {
+            handleAddGoal(goal);
+            setModalVisible(false);
+          }}
+        />
         
       </View>
     </View>
