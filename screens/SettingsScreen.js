@@ -11,7 +11,7 @@ export default function SettingsScreen({ navigation }){
     {
       title: 'About',
       icon: <Feather name="info" size={24} color="#3F7D20" />,
-      onPress: () => console.log('About pressed')
+      onPress: () => navigation.navigate('About')
     },
     {
       title: 'Contact Us',
