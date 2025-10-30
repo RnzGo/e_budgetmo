@@ -4,7 +4,6 @@ import {
   View,
   Text,
   Image,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   Platform,
@@ -13,6 +12,7 @@ import {
   Dimensions,
   PixelRatio,
 } from 'react-native';
+import globalStyles from '../styles/globalStyles';
 import Svg, { G, Path, Circle, Text as SvgText } from 'react-native-svg';
 import MonthYearPicker from '../components/MonthYearPicker';             
 import { Ionicons, AntDesign } from '@expo/vector-icons';
@@ -225,7 +225,7 @@ export default function Statistics_Page({ navigation }) {
 
   return (
     <View style={[styles.root, { paddingTop: topPadding }]}> 
-      {/* Header area (fixed) */}
+      {/* Header area */}
       <View style={styles.header}>
         <View style={styles.headerLeftGroup}>
           <TouchableOpacity style={styles.headerLeft} onPress={() => navigation?.goBack?.()}>
@@ -375,236 +375,4 @@ export default function Statistics_Page({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: '#F5F5F5', // header background color (green)
-  },
-  container: {
-    padding: 16,
-    paddingBottom: 48,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#6CA16B',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 12,
-    borderRadius: 0,
-  },
-  headerLeft: {
-    width: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  headerLeftGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerIcon: {
-    color: '#fff',
-    fontSize: normalize(22),
-  },
-  headerCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: normalize(36),
-    height: normalize(36),
-    borderRadius: normalize(18),
-    backgroundColor: '#FFF0E6', // placeholder avatar color
-    marginRight: 8,
-  },
-  headerTitle: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  headerRight: {
-    width: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-  },
-  settingsIcon: {
-    width: 22,
-    height: 22,
-    borderRadius: 4,
-    backgroundColor: '#fff', // placeholder for gear icon
-    opacity: 0.95,
-  },
-  profileContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginLeft: 8, // small gap between back button and profile
-  },
-  profileImage: {
-    width: normalize(45),
-    height: normalize(45),
-    borderRadius: normalize(30),
-  },
-  userName: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: normalize(20),
-  },
-  settingsButton: {
-    marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  card: {
-    marginTop: 12,
-    backgroundColor: '#FAF9F6',
-    borderRadius: 12,
-    padding: 14,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 6 },
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-  },
-  smallTitle: {
-    color: '#8B5CF6',
-    fontWeight: 'bold',
-    fontSize: normalize(22),
-    marginBottom: 4,
-  },
-  bigTitle: {
-    fontSize: normalize(34),
-    fontWeight: 'bold',
-    fontFamily: 'Poppins-ExtraBold',
-    color: '#111827',
-    marginBottom: 12,
-  },
-  horizontalLine: {
-    borderBottomColor: 'black',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    width: '100%',
-    marginBottom: 20,
-  },
-  pickerRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pickerBox: {
-    width: normalize(170),
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    overflow: 'hidden',
-    backgroundColor: '#F8FAFC',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  monthNavButton: {
-    paddingHorizontal: normalize(8),
-    paddingVertical: normalize(6),
-    marginHorizontal: normalize(8),
-    borderRadius: normalize(8),
-  },
-  pickerText: {
-    fontSize: normalize(16),
-    color: '#111827',
-    paddingVertical: normalize(14),
-    fontWeight: '600',
-  },
-  chartContainer: {
-    alignItems: 'center',
-    marginTop: 6,
-    marginBottom: 8,
-  },
-  legend: {
-    marginTop: 6,
-    paddingTop: 6,
-  },
-  legendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  legendDot: {
-    width: normalize(12),
-    height: normalize(12),
-    borderRadius: 999, // ensure perfectly round on all screen densities
-    borderWidth: 0.5,
-    borderColor: '#FFFFFF',
-    marginRight: normalize(10),
-  },
-  legendText: {
-    flex: 1,
-    color: '#615E83',
-    fontWeight: 'bold',
-    fontSize: normalize(16),
-  },
-  legendValue: {
-    color: '#6B7280',
-    fontSize: normalize(16),
-  },
-  remainingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E5E7EB',
-    marginTop: 8,
-  },
-  remainingLabel: {
-    color: '#374151',
-    fontWeight: '700',
-    fontSize: normalize(16),
-  },
-  remainingValue: {
-    color: '#111827',
-    fontWeight: '800',
-    fontSize: normalize(16),
-  },
-  homeIndicator: {
-    height: normalize(6),
-    alignSelf: 'center',
-    backgroundColor: '#787878',
-    width: normalize(100),
-    borderRadius: normalize(6),
-    marginTop: 18,
-  },
-
-  /* Modal wrapper used when calling MonthYearPicker component */
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.26)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalWrapper: {
-    width: '92%',
-    maxWidth: 420,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 12,
-    alignItems: 'center',
-  },
-  modalCloseButton: {
-    marginTop: 12,
-    backgroundColor: '#7FB56A',
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 8,
-  },
-  modalCloseText: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-});
+const styles = globalStyles.Statistics_Page;

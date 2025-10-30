@@ -52,12 +52,26 @@ export function FinanceProvider({ children }) {
 
   function addEntry(entry) {
     setFinance((prev) => {
-      const addedIncome = entry.type === 'income' ? entry.amount : 0;
-      const addedExpense = entry.type === 'expense' ? entry.amount : 0;
+      // Normalize the incoming entry to ensure it always has an id, date and numeric amount
+      const normalized = {
+        id: entry.id ?? Date.now(),
+        date: entry.date ?? new Date().toISOString(),
+        // prefer an explicit title, fall back to note for legacy compatibility
+        category: entry.category ?? entry.title ?? entry.note ?? (entry.type === 'income' ? 'Income' : 'Expense'),
+        title: entry.title ?? entry.note ?? '',
+        // also keep note for older records/components that still read it
+        note: entry.note ?? entry.title ?? '',
+        type: entry.type,
+        amount: Number(entry.amount) || 0,
+      };
+
+      const addedIncome = normalized.type === 'income' ? normalized.amount : 0;
+      const addedExpense = normalized.type === 'expense' ? normalized.amount : 0;
       const newIncome = (prev.income || 0) + addedIncome;
       const newExpense = (prev.expense || 0) + addedExpense;
-      const newBalance = (prev.balance || 0) + (entry.type === 'income' ? entry.amount : -entry.amount);
-      const newEntries = [...(prev.entries || []), entry];
+      const newBalance = (prev.balance || 0) + (normalized.type === 'income' ? normalized.amount : -normalized.amount);
+      // Prepend new entries so the most recent appear first
+      const newEntries = [normalized, ...(prev.entries || [])];
       return {
         ...prev,
         income: newIncome,

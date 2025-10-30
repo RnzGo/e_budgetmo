@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Modal,
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   Alert,
   // FlatList removed to avoid nested VirtualizedList inside ScrollView
   KeyboardAvoidingView,
@@ -14,6 +13,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
+import globalStyles from '../styles/globalStyles';
 import FullDatePicker from './FullDatePicker';
 
 export default function AddGoalModal({ visible, onClose, onSubmit }) {
@@ -28,6 +28,7 @@ export default function AddGoalModal({ visible, onClose, onSubmit }) {
   const [pickerDate, setPickerDate] = useState(new Date());
   const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
   const [isCategoryCustom, setIsCategoryCustom] = useState(false);
+  const categoryInputRef = useRef(null);
 
   const CATEGORY_SUGGESTIONS = [
     'Savings',
@@ -91,7 +92,7 @@ export default function AddGoalModal({ visible, onClose, onSubmit }) {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.overlay} enabled>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" scrollEnabled={!showCategorySuggestions}>
               <View style={styles.header}>
                 <Text style={styles.title}>{title}</Text>
               </View>
@@ -108,63 +109,50 @@ export default function AddGoalModal({ visible, onClose, onSubmit }) {
               />
             </View>
 
-            <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Category:</Text>
-              <View style={styles.relativeWrapper}>
-                {!isCategoryCustom ? (
-                  <TouchableOpacity
-                    style={[styles.input, styles.pseudoInput]}
-                    onPress={() => {
-                      // dismiss keyboard when opening suggestions
-                      Keyboard.dismiss();
-                      setShowCategorySuggestions(true);
-                    }}
-                  >
-                    <Text style={{ color: goalCategory ? '#111' : '#999' }}>{goalCategory || 'Select category'}</Text>
-                  </TouchableOpacity>
-                ) : (
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter custom category"
-                    placeholderTextColor="#999"
-                    value={goalCategory}
-                    onChangeText={(t) => setGoalCategory(t)}
-                    onFocus={() => { setShowCategorySuggestions(true); Keyboard.dismiss(); }}
-                    showSoftInputOnFocus={false}
-                  />
-                )}
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>Category:</Text>
+                  <View style={styles.relativeWrapper}>
+                    {/* Always allow typing into category - suggestions will filter as user types */}
+                    <TextInput
+                      ref={categoryInputRef}
+                      style={[styles.input, isCategoryCustom ? null : styles.pseudoInput]}
+                      placeholder={isCategoryCustom ? 'Enter custom category' : 'Select category'}
+                      placeholderTextColor="#999"
+                      value={goalCategory}
+                      onChangeText={(t) => { setGoalCategory(t); setShowCategorySuggestions(true); setIsCategoryCustom(true); }}
+                      onFocus={() => { setShowCategorySuggestions(true); setIsCategoryCustom(true); }}
+                    />
 
-                {showCategorySuggestions && (
-                  <View style={styles.suggestionsBox}>
-                    {/* Non-virtualized list to avoid nesting VirtualizedLists inside a ScrollView */}
-                    <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 160 }}>
-                      {(isCategoryCustom
-                        ? CATEGORY_SUGGESTIONS.filter((s) => s.toLowerCase().includes((goalCategory || '').toLowerCase()))
-                        : CATEGORY_SUGGESTIONS
-                      ).map((item) => (
-                        <TouchableOpacity
-                          key={item}
-                          style={styles.suggestionItem}
-                          onPress={() => {
-                            if (item === 'Custom') {
-                              setIsCategoryCustom(true);
-                              setGoalCategory('');
-                            } else {
-                              setGoalCategory(item);
-                              setIsCategoryCustom(false);
-                            }
-                            setShowCategorySuggestions(false);
-                          }}
-                        >
-                          <Text>{item}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
+                    {showCategorySuggestions && (
+                      <View style={styles.suggestionsBox}>
+                        {/* Non-virtualized list to avoid nesting VirtualizedLists inside a ScrollView */}
+                        <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled={true} style={{ maxHeight: 160 }}>
+                          {CATEGORY_SUGGESTIONS.filter((s) => s.toLowerCase().includes((goalCategory || '').toLowerCase())).map((item) => (
+                            <TouchableOpacity
+                              key={item}
+                              style={styles.suggestionItem}
+                              onPress={() => {
+                                if (item === 'Custom') {
+                                  setIsCategoryCustom(true);
+                                  setGoalCategory('');
+                                  // focus the input so user can type
+                                  setTimeout(() => categoryInputRef.current?.focus?.(), 50);
+                                } else {
+                                  setGoalCategory(item);
+                                  setIsCategoryCustom(false);
+                                }
+                                setShowCategorySuggestions(false);
+                              }}
+                            >
+                              <Text>{item}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    )}
+
                   </View>
-                )}
-                
-              </View>
-            </View>
+                </View>
 
             <View style={styles.fieldContainer}>
               <Text style={styles.label}>
@@ -250,172 +238,4 @@ export default function AddGoalModal({ visible, onClose, onSubmit }) {
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    // cover the entire screen regardless of parent layout
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  container: {
-    width: '100%',
-    maxWidth: 420,
-    maxHeight: '90%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  scrollContent: {
-    paddingBottom: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#222',
-  },
-  content: {
-    minHeight: 120,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  fieldContainer: {
-    width: '100%',
-    paddingBottom: 12,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    width: '100%',
-  },
-  pseudoInput: {
-    justifyContent: 'center',
-    backgroundColor: '#FAFAFA',
-  },
-  dateInput: {
-    justifyContent: 'center',
-  },
-  inlinePicker: {
-    marginTop: 8,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: '#EEE',
-  },
-  inlinePickerContainer: {
-    marginTop: 8,
-  },
-  pickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-  },
-  pickerBtn: {
-    padding: 8,
-    borderRadius: 6,
-    backgroundColor: '#F3F4F6',
-  },
-  pickerBtnText: {
-    fontSize: 16,
-  },
-  pickerLabel: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 14,
-    color: '#111',
-  },
-  pickerActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 8,
-    gap: 8,
-  },
-  relativeWrapper: {
-    position: 'relative',
-  },
-  suggestionsBox: {
-    position: 'absolute',
-    top: 52,
-    left: 0,
-    right: 0,
-    borderWidth: 1,
-    borderColor: '#EEE',
-    backgroundColor: '#FFF',
-    borderRadius: 6,
-    maxHeight: 180,
-    zIndex: 9999,
-    elevation: 10,
-  },
-  suggestionItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  textArea: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    width: '100%',
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
-    marginTop: 8,
-  },
-  actionButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  cancelButton: {
-    backgroundColor: '#f0f0f0',
-  },
-  submitButton: {
-    backgroundColor: '#4CAF50',
-  },
-  disabledButton: {
-    backgroundColor: '#C8C8C8',
-  },
-  actionText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  disabledText: {
-    color: '#6B6B6B',
-  },
-  required: {
-    color: '#E53E3E',
-    marginRight: 6,
-    fontWeight: '700',
-  },
-});
+const styles = globalStyles.AddGoalModal;

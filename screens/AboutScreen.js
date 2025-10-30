@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import globalStyles from '../styles/globalStyles';
 import { AntDesign } from '@expo/vector-icons';
 
 export default function AboutScreen({ navigation }){
@@ -54,85 +55,4 @@ export default function AboutScreen({ navigation }){
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#6CA16B',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    paddingTop: 60,
-  },
-  backButton: {
-    padding: 5,
-  },
-  headerTitle: {
-    color: 'white',
-    fontSize: 30,
-    fontWeight: 'bold',
-  },
-  placeholder: {
-    width: 28,
-  },
-  contentContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  section: {
-    marginBottom: 25,
-  },
-  appTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#3F7D20',
-    textAlign: 'center',
-    marginBottom: 15,
-  },
-  description: {
-    fontSize: 16,
-    color: '#333333',
-    lineHeight: 22,
-    textAlign: 'center',
-  },
-  version: {
-    fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#3F7D20',
-    marginBottom: 10,
-  },
-  team: {
-    fontSize: 16,
-    color: '#333333',
-    lineHeight: 22,
-  },
-  member: {
-    fontSize: 16,
-    color: '#333333',
-    lineHeight: 22,
-    marginBottom: 5,
-  },
-  copyright: {
-    fontSize: 14,
-    color: '#666666',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  disclaimer: {
-    fontSize: 14,
-    color: '#666666',
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-});
+const styles = globalStyles.AboutScreen;

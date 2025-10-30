@@ -1,6 +1,7 @@
 // components/MonthYearPicker.js
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
+import globalStyles from '../styles/globalStyles';
 import { AntDesign } from "@expo/vector-icons";
 
 export default function MonthYearPicker(props) {
@@ -14,7 +15,7 @@ export default function MonthYearPicker(props) {
   const [year, setYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
 
-  // If parent provides initialDate prop, sync to it (optional)
+const styles = globalStyles.MonthYearPicker;
   useEffect(() => {
     if (props.initialDate instanceof Date) {
       setYear(props.initialDate.getFullYear());
@@ -103,89 +104,4 @@ export default function MonthYearPicker(props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  header: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-    paddingHorizontal: 8,
-  },
-  iconButton: {
-    padding: 6,
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  yearContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  yearText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-
-  monthGrid: {
-    width: '100%',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 6,
-    marginBottom: 12,
-  },
-  monthButton: {
-    width: '30%',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginVertical: 6,
-  },
-  selectedMonth: {
-    backgroundColor: '#97D0C3', // selected pill color
-    paddingHorizontal: 8,
-  },
-  monthText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  selectedMonthText: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-
-  footer: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  ctrlButton: {
-    flex: 1,
-    marginHorizontal: 6,
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#F2F3F4',
-  },
-  applyButton: {
-    backgroundColor: '#7FB56A',
-  },
-  ctrlText: {
-    fontSize: 15,
-    color: '#111',
-    fontWeight: '600',
-  },
-});
+// use global styles

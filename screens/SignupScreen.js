@@ -1,4 +1,5 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StatusBar } from 'react-native';
+import globalStyles from '../styles/globalStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function SignUpScreen({ navigation }) {
@@ -84,93 +85,4 @@ export default function SignUpScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    justifyContent: 'center',
-  },
-  logo: { 
-    color: 'white', 
-    fontSize: 60, 
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 10,
-    position: 'absolute', 
-    top: 120,
-    left: 0,
-    right: 0,
-  },
-  formContainer: {
-    backgroundColor: 'white',
-    marginHorizontal: 20,
-    borderRadius: 20, 
-    paddingHorizontal: 30,
-    paddingVertical: 30,
-  },
-  title: {
-    fontSize: 50,
-    fontWeight: 'bold',
-    color: 'black',
-    marginBottom: 10,
-    textAlign: 'center',
-    right: 90,
-  },
-  fieldContainer: {
-    marginBottom: 30,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 5,
-  },
-  input: {
-    fontSize: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 0,
-  },
-  underline: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
-    marginTop: 5,
-  },
-  button: { 
-    backgroundColor: '#6CA16B', 
-    paddingVertical: 10,
-    width: '30%',
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: { 
-    color: 'white', 
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E0E0E0',
-  },
-  dividerText: {
-    color: '#666',
-    fontSize: 14,
-    marginHorizontal: 10,
-  },
-  footer: {
-    alignItems: 'center',
-  },
-  footerText: { 
-    color: '#666',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  footerLink: { 
-    color: '#6CA16B',
-    fontWeight: 'bold',
-  },
-});
+const styles = globalStyles.SignupScreen;

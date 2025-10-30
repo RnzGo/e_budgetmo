@@ -1,9 +1,11 @@
 // GoalsScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity, Image, StatusBar, TextInput, Alert } from 'react-native';
+import { View, Text, ScrollView, Platform, TouchableOpacity, Image, StatusBar, TextInput, Alert } from 'react-native';
+import globalStyles from '../styles/globalStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons, FontAwesome5, AntDesign } from '@expo/vector-icons';
 import AddGoalModal from '../components/AddGoalModal';
+import { useFinance } from '../context/FinanceContext';
 
 const goalsData = [];
 
@@ -15,6 +17,7 @@ export default function GoalsScreen({ navigation }) {
   const [goals, setGoals] = useState(goalsData);
   const [expandedGoalId, setExpandedGoalId] = useState(null);
   const [amountInputs, setAmountInputs] = useState({}); // keyed by goal id
+  const { addEntry } = useFinance();
 
   // Load saved goals on mount
   useEffect(() => {
@@ -94,6 +97,8 @@ export default function GoalsScreen({ navigation }) {
       Alert.alert('Invalid amount', 'Please enter a valid amount greater than zero.');
       return;
     }
+    // capture goal info for creating corresponding finance entry
+    const goal = goals.find((g) => g.id === goalId) || { title: 'Goal' };
 
     setGoals((prev) => prev.map((g) => {
       if (g.id !== goalId) return g;
@@ -111,6 +116,23 @@ export default function GoalsScreen({ navigation }) {
       };
       return { ...g, current: newCurrent, progress: newProgress, transactions: [...prevTx, tx] };
     }));
+
+    // create a corresponding finance entry so Statistics and Transactions include this movement
+    try {
+      const entryPayload = {
+        date: new Date().toISOString(),
+        // use the user-entered category for the goal (e.g., 'Device'), even if the goal is shown under 'Others'
+        category: goal.category || 'Uncategorized',
+        amount: amt,
+        // use the goal title itself as the transaction title
+        title: goal.title || 'Goal',
+        // adding money to a goal reduces available cash -> treat as expense; withdrawing returns cash -> income
+        type: isAdd ? 'expense' : 'income',
+      };
+      addEntry(entryPayload);
+    } catch (e) {
+      console.warn('Failed to add finance entry for goal adjustment', e);
+    }
 
     setAmountInputs((prev) => ({ ...prev, [goalId]: '' }));
   }
@@ -138,12 +160,83 @@ export default function GoalsScreen({ navigation }) {
       progress: newGoal.progress ?? 0,
       current: Number(newGoal.current) || 0,
       transactions: Array.isArray(newGoal.transactions) ? newGoal.transactions : [],
+      category: newGoal.category || newGoal.categoryName || 'Uncategorized',
       target: Number(newGoal.targetAmount) || Number(newGoal.target) || 0,
       note: newGoal.note || '',
       color: newGoal.color || '#3B82F6',
     };
 
     setGoals((prev) => [goal, ...prev]);
+  }
+
+  // Predefined category order to display. 'Others' will contain uncategorized or custom categories.
+  const CATEGORY_ORDER = ['Savings', 'Emergency', 'Vacation', 'Education', 'Investment', 'Bills'];
+
+  function renderGoalCard(goal) {
+    const past = isPastDue(goal);
+    const expanded = expandedGoalId === goal.id;
+    return (
+      <View key={goal.id} style={[styles.goalCard, past ? styles.pastDueCard : null]}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          disabled={past}
+          onPress={() => toggleExpand(goal.id)}
+        >
+          <View style={styles.goalRow}>
+            <Text style={[styles.goalTitle, past ? styles.pastDueText : null]}>{goal.title}</Text>
+            <Text style={[styles.goalDue, past ? styles.pastDueText : null]}>Due: {goal.due}</Text>
+          </View>
+
+          <View style={styles.progressBackground}>
+            <View
+              style={[
+                styles.progressBar,
+                { width: `${(Number(goal.progress) || 0) * 100}%`, backgroundColor: goal.color },
+              ]}
+            />
+          </View>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+            <Text style={[styles.goalAmount, past ? styles.pastDueText : null]}>
+              {Number(goal.current || 0).toLocaleString()}/{Number(goal.target || 0).toLocaleString()}
+            </Text>
+            <Text style={[styles.goalAmount, past ? styles.pastDueText : null]}> {goal && Number(goal.target) > 0
+                ? `${Math.round((Number(goal.current || 0) / Number(goal.target)) * 100)}%`
+                : `${Math.round(((goal.progress ?? 0) || 0) * 100)}%`}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        {expanded && (
+          <View style={styles.expandedArea}>
+            {goal.note ? (
+              <Text style={styles.noteText}>{goal.note}</Text>
+            ) : null}
+
+            <TextInput
+              style={styles.amountInput}
+              placeholder="Enter amount"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+              value={amountInputs[goal.id] || ''}
+              onChangeText={(t) => setAmountInputs((prev) => ({ ...prev, [goal.id]: t }))}
+            />
+
+            <View style={styles.actionRow}>
+              <TouchableOpacity style={[styles.smallButton, styles.addBtn]} onPress={() => handleAdjustGoal(goal.id, true)}>
+                <Text style={styles.buttonText}>Add</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.smallButton, styles.withdrawBtn]} onPress={() => handleAdjustGoal(goal.id, false)}>
+                <Text style={styles.buttonText}>Withdraw</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.smallButton, styles.deleteBtn]} onPress={() => handleDeleteGoal(goal.id)}>
+                <Text style={styles.buttonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </View>
+    );
   }
 
   return (
@@ -175,71 +268,32 @@ export default function GoalsScreen({ navigation }) {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          {goals.map((goal) => {
-            const past = isPastDue(goal);
-            const expanded = expandedGoalId === goal.id;
-            return (
-              <View key={goal.id} style={[styles.goalCard, past ? styles.pastDueCard : null]}>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  disabled={past}
-                  onPress={() => toggleExpand(goal.id)}
-                >
-                  <View style={styles.goalRow}>
-                    <Text style={[styles.goalTitle, past ? styles.pastDueText : null]}>{goal.title}</Text>
-                    <Text style={[styles.goalDue, past ? styles.pastDueText : null]}>Due: {goal.due}</Text>
+          {(() => {
+            // group goals by predefined categories; uncategorized/custom go to 'Others'
+            const groups = {};
+            CATEGORY_ORDER.forEach((c) => { groups[c] = []; });
+            groups['Others'] = [];
+
+            goals.forEach((g) => {
+              const cat = (g.category || '').trim();
+              if (cat && groups.hasOwnProperty(cat)) groups[cat].push(g);
+              else groups['Others'].push(g);
+            });
+
+            // render each category section in order
+            return [...CATEGORY_ORDER, 'Others'].map((cat) => (
+              <View key={cat} style={{ marginBottom: 12 }}>
+                <Text style={{ fontSize: 18, fontWeight: '800', color: '#374151', marginBottom: 6 }}>{cat}</Text>
+                {groups[cat].length === 0 ? (
+                  <View style={[styles.goalCard, { paddingVertical: 18, alignItems: 'center' }]}>
+                    <Text style={{ color: '#9CA3AF' }}>-No Goals Yet-</Text>
                   </View>
-
-                  <View style={styles.progressBackground}>
-                    <View
-                      style={[
-                        styles.progressBar,
-                        { width: `${(Number(goal.progress) || 0) * 100}%`, backgroundColor: goal.color },
-                      ]}
-                    />
-                  </View>
-
-                  <Text style={[styles.goalAmount, past ? styles.pastDueText : null]}>
-                    {Number(goal.current || 0).toLocaleString()}/{Number(goal.target || 0).toLocaleString()}
-                  </Text>
-                </TouchableOpacity>
-
-                {expanded && (
-                  <View style={styles.expandedArea}>
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailText}>Progress: {Math.round(((goal.progress ?? (goal.target ? (goal.current || 0) / goal.target : 0)) || 0) * 100)}%</Text>
-                      <Text style={styles.detailText}>Target: {Number(goal.target || 0).toLocaleString()}</Text>
-                    </View>
-
-                    {goal.note ? (
-                      <Text style={styles.noteText}>{goal.note}</Text>
-                    ) : null}
-
-                    <TextInput
-                      style={styles.amountInput}
-                      placeholder="Enter amount"
-                      placeholderTextColor="#999"
-                      keyboardType="numeric"
-                      value={amountInputs[goal.id] || ''}
-                      onChangeText={(t) => setAmountInputs((prev) => ({ ...prev, [goal.id]: t }))}
-                    />
-
-                    <View style={styles.actionRow}>
-                      <TouchableOpacity style={[styles.smallButton, styles.addBtn]} onPress={() => handleAdjustGoal(goal.id, true)}>
-                        <Text style={styles.buttonText}>Add</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={[styles.smallButton, styles.withdrawBtn]} onPress={() => handleAdjustGoal(goal.id, false)}>
-                        <Text style={styles.buttonText}>Withdraw</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={[styles.smallButton, styles.deleteBtn]} onPress={() => handleDeleteGoal(goal.id)}>
-                        <Text style={styles.buttonText}>Delete</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
+                ) : (
+                  groups[cat].map((goal) => renderGoalCard(goal))
                 )}
               </View>
-            );
-          })}
+            ));
+          })()}
         </ScrollView>
           
         {/** ----- Add Goals Button ------ */}
@@ -270,210 +324,4 @@ export default function GoalsScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: '#F5F5F5', 
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#6CA16B',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 20,
-    borderRadius: 0,
-  },
-  headerLeft: {
-    width: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  headerLeftGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerIcon: {
-    color: '#fff',
-    fontSize: 22,
-  },
-  profileContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginLeft: 8,
-  },
-  profileImage: {
-    width: 45,
-    height: 45,
-    borderRadius: 30,
-  },
-  userName: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 20,
-  },
-  settingsButton: {
-    marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    backgroundColor: '#FAF9F6',
-    borderRadius: 23,
-    padding: 20,
-    paddingVertical: 20,
-    paddingHorizontal: 15,
-    width: '90%',
-    height: '70%',
-    alignContent: 'center',
-    alignSelf: 'center',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    ...Platform.select({
-          ios: {
-            shadowColor: '#000',
-            shadowOpacity: 0.06,
-            shadowRadius: 8,
-            shadowOffset: { width: 0, height: 6 },
-          },
-          android: {
-            elevation: 3,
-          },
-        }),
-  },
-  goalsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  goalsTitle: {
-    marginLeft: 8,
-    fontSize: 34,
-    fontWeight: '900',
-    color: '#EA580C',
-    marginLeft: 8,
-  },
-  goalCard: {
-    backgroundColor: '#FAF9F6',
-    borderRadius: 23,
-    padding: 12,
-    marginBottom: 14,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    width: '98%',
-    alignSelf: 'center',
-    shadowOffset: { width: 0, height: 3 },
-  },
-  goalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  goalTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#374151',
-  },
-  goalDue: {
-    fontSize: 16,
-    color: '#6B7280',
-  },
-  progressBackground: {
-    height: 6,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 4,
-    marginTop: 8,
-  },
-  progressBar: {
-    height: 6,
-    borderRadius: 4,
-  },
-  goalAmount: {
-    marginTop: 4,
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'right',
-  },
-  addButton: {
-    flexDirection: 'row',
-    backgroundColor: '#E67E22',
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 10,
-    marginTop: 12,
-    alignSelf: 'center',
-    width: '40%',
-  },
-  addText: {
-    color: '#fff',
-    fontWeight: '600',
-    marginLeft: 5,
-    fontSize: 16,
-  },
-  pastDueCard: {
-    backgroundColor: '#F3F4F6',
-    opacity: 0.7,
-  },
-  pastDueText: {
-    color: '#9CA3AF',
-  },
-  expandedArea: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: '#FFF',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  detailText: {
-    color: '#374151',
-    marginBottom: 6,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  noteText: {
-    color: '#4B5563',
-    marginBottom: 8,
-    fontStyle: 'italic',
-  },
-  amountInput: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    padding: 8,
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  smallButton: {
-    flex: 1,
-    paddingVertical: 8,
-    marginHorizontal: 4,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  addBtn: {
-    backgroundColor: '#22C55E',
-  },
-  withdrawBtn: {
-    backgroundColor: '#F59E0B',
-  },
-  deleteBtn: {
-    backgroundColor: '#EF4444',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-});
+const styles = globalStyles.GoalsScreen;

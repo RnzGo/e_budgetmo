@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import globalStyles from '../styles/globalStyles';
 import { AntDesign } from '@expo/vector-icons';
 
 export default function FullDatePicker({ initialDate, onApply, onClose }) {
@@ -60,8 +61,8 @@ export default function FullDatePicker({ initialDate, onApply, onClose }) {
       </View>
 
       <View style={styles.weekdaysRow}>
-        {['S','M','T','W','T','F','S'].map((w) => (
-          <Text key={w} style={styles.weekday}>{w}</Text>
+        {['S','M','T','W','T','F','S'].map((w, i) => (
+          <Text key={`weekday-${i}`} style={styles.weekday}>{w}</Text>
         ))}
       </View>
 
@@ -94,91 +95,4 @@ export default function FullDatePicker({ initialDate, onApply, onClose }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 12,
-    width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  iconButton: {
-    padding: 6,
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerCenter: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  monthText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#222',
-  },
-  weekdaysRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 6,
-    marginBottom: 6,
-  },
-  weekday: {
-    width: `${100/7}%`,
-    textAlign: 'center',
-    color: '#666',
-    fontWeight: '600',
-  },
-  daysGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-  },
-  dayCell: {
-    width: `${100/7}%`,
-    paddingVertical: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dayText: {
-    color: '#111',
-  },
-  selectedDay: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 20,
-  },
-  selectedDayText: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-  footer: {
-    marginTop: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  ctrlButton: {
-    flex: 1,
-    marginHorizontal: 6,
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#F2F3F4',
-  },
-  applyButton: {
-    backgroundColor: '#7FB56A',
-  },
-  ctrlText: {
-    fontSize: 15,
-    color: '#111',
-    fontWeight: '600',
-  },
-});
+const styles = globalStyles.FullDatePicker;

@@ -1,4 +1,5 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
+import globalStyles from '../styles/globalStyles';
 
 export default function Onboarding2({ navigation }) {
   return (
@@ -32,65 +33,4 @@ export default function Onboarding2({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    padding: 40, 
-    backgroundColor: 'white' 
-  },
-  image: { 
-    width: 100, 
-    height: 100, 
-    marginBottom: 20 
-  },
-  title: { 
-    fontSize: 60, 
-    fontWeight: 'bold', 
-    color: '#3F7D20', 
-    textAlign: 'center',
-  },
-  titleMain: { 
-    fontSize: 60, 
-    fontWeight: 'bold', 
-    color: '#3F7D20', 
-    textAlign: 'center',
-    marginBottom: 30
-  },
-  description: { 
-    textAlign: 'center', 
-    fontSize: 18, 
-    color: '#666', 
-    lineHeight: 24,
-    marginBottom: 30
-  },
-  button: { 
-    backgroundColor: '#6CA16B', 
-    paddingVertical: 15, 
-    paddingHorizontal: 50, 
-    borderRadius: 10,
-    width: '50%',
-    alignItems: 'center',
-  },
-  buttonText: { 
-    color: 'white', 
-    fontWeight: 'bold',
-    fontSize: 20
-  },
-  
-  dotsContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 30
-  },
-  dot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#DDD',
-  },
-  activeDot: {
-    backgroundColor: '#6CA16B',
-  },
-});
+const styles = globalStyles.Onboarding2;

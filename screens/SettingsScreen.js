@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import globalStyles from '../styles/globalStyles';
 import { AntDesign, MaterialIcons, Feather, Ionicons } from '@expo/vector-icons';
 
 export default function SettingsScreen({ navigation }){
@@ -63,54 +64,4 @@ export default function SettingsScreen({ navigation }){
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#6CA16B',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    paddingTop: 60,
-  },
-  backButton: {
-    padding: 5,
-  },
-  headerTitle: {
-    color: 'white',
-    fontSize: 30,
-    fontWeight: 'bold',
-  },
-  placeholder: {
-    width: 28, // Same as back button for balance
-  },
-  menuContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 15,
-  },
-  menuItemText: {
-    fontSize: 16,
-    color: '#333333',
-    fontWeight: '500',
-  },
-  destructiveText: {
-    color: '#EB4D4B',
-  },
-});
+const styles = globalStyles.SettingsScreen;
