@@ -1,9 +1,21 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Text, Image, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import globalStyles from '../styles/globalStyles';
 
 export default function Onboarding1({ navigation }) {
+  const startX = Dimensions.get('window').width;
+  const translateX = useRef(new Animated.Value(startX)).current;
+
+  useEffect(() => {
+    Animated.timing(translateX, {
+      toValue: 0,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, [translateX]);
+
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { transform: [{ translateX }] }]}> 
       <Image
         source={require('../assets/hello.png')}
         style={styles.image}/>
@@ -18,11 +30,11 @@ export default function Onboarding1({ navigation }) {
       </Text>
 
       {/* Progress Dots */}
-      <View style={styles.dotsContainer}>
-        <View style={[styles.dot, styles.activeDot]}></View>
-        <View style={styles.dot}></View>
-        <View style={styles.dot}></View>
-      </View>
+      <Animated.View style={styles.dotsContainer}>
+        <Animated.View style={[styles.dot, styles.activeDot]}></Animated.View>
+        <Animated.View style={styles.dot}></Animated.View>
+        <Animated.View style={styles.dot}></Animated.View>
+      </Animated.View>
 
       {/* Next Button */}
       <TouchableOpacity 
@@ -31,7 +43,7 @@ export default function Onboarding1({ navigation }) {
         <Text style={styles.buttonText}>Next</Text>
       </TouchableOpacity>
 
-    </View>
+    </Animated.View>
   );
 }
 

@@ -1,15 +1,27 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Text, Image, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import globalStyles from '../styles/globalStyles';
 
 export default function Onboarding3({ navigation }) {
+  const startX = Dimensions.get('window').width;
+  const translateX = useRef(new Animated.Value(startX)).current;
+
+  useEffect(() => {
+    Animated.timing(translateX, {
+      toValue: 0,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, [translateX]);
+
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { transform: [{ translateX }] }]}> 
       <Image
         source={require('../assets/goals.png')}
         style={styles.image}/>
 
       {/* Title */}
-      <Text style={styles.titleMain}>Set GOALS & Save Smartly</Text>
+      <Text style={styles.title}>Set GOALS & Save Smartly</Text>
 
       {/* Description */}
       <Text style={styles.description}>
@@ -17,11 +29,11 @@ export default function Onboarding3({ navigation }) {
       </Text>
 
       {/* Progress Dots */}
-      <View style={styles.dotsContainer}>
-        <View style={styles.dot}></View>
-        <View style={styles.dot}></View>
-        <View style={[styles.dot, styles.activeDot]}></View>
-      </View>
+      <Animated.View style={styles.dotsContainer}>
+        <Animated.View style={styles.dot}></Animated.View>
+        <Animated.View style={styles.dot}></Animated.View>
+        <Animated.View style={[styles.dot, styles.activeDot]}></Animated.View>
+      </Animated.View>
 
       {/* Go to App Button */}
       <TouchableOpacity 
@@ -29,7 +41,7 @@ export default function Onboarding3({ navigation }) {
         onPress={() => navigation.navigate('Welcome')}>
         <Text style={styles.buttonText}>Go to App</Text>
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 }
 
