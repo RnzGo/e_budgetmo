@@ -1,13 +1,12 @@
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import globalStyles from '../styles/globalStyles';
 import { AntDesign, MaterialIcons, Feather, Ionicons } from '@expo/vector-icons';
-
 export default function SettingsScreen({ navigation }){
   const menuItems = [
     {
       title: 'Account Information',
       icon: <MaterialIcons name="person-outline" size={24} color="#3F7D20" />,
-      onPress: () => console.log('Account Information pressed')
+      onPress: () => navigation.navigate('AccountInformation')
     },
     {
       title: 'About',
@@ -15,9 +14,9 @@ export default function SettingsScreen({ navigation }){
       onPress: () => navigation.navigate('About')
     },
     {
-      title: 'Contact Us',
+      title: 'ContactUs',
       icon: <Ionicons name="mail-outline" size={24} color="#3F7D20" />,
-      onPress: () => console.log('Contact Us pressed')
+      onPress: () => navigation.navigate('ContactUs')
     },
     {
       title: 'Log Out',

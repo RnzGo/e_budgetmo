@@ -39,7 +39,7 @@ export default function AboutScreen({ navigation }){
           <Text style={styles.sectionTitle}>Team Members:</Text>
           <Text style={styles.member}>Gaw, Albert Renz P.</Text>
           <Text style={styles.member}>Ong, Carl Gabriel</Text>
-          <Text style={styles.member}>Payaval, Kevin Charles</Text>
+          <Text style={styles.member}>Payaval, Kevin Charles C.</Text>
           <Text style={styles.member}>Slaron, Giahn M.</Text>
           <Text style={styles.member}>Syilo, Carlos Miques R.</Text>
         </View>

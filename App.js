@@ -8,7 +8,9 @@ import HomeScreen from './screens/HomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import AccountInformation from './screens/AccountInformation';
 import AboutScreen from './screens/AboutScreen';
+import ContactUs from './screens/ContactUs';
 import Statistics_Page from './screens/Statistics_Page';
 import GoalsScreen from './screens/GoalsScreen';
 import TransactionScreen from './screens/TransactionScreen';
@@ -30,6 +32,8 @@ export default function App() {
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
+    <Stack.Screen name="AccountInformation" component={AccountInformation} />
+  <Stack.Screen name="ContactUs" component={ContactUs} />
         <Stack.Screen name="About" component={AboutScreen} />
         <Stack.Screen name="Statistics_Page" component={Statistics_Page} />
         <Stack.Screen name="GoalsScreen" component={GoalsScreen} />
