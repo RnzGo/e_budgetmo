@@ -245,7 +245,7 @@ export default function GoalsScreen({ navigation }) {
       <View style={styles.header}>
         <View style={styles.headerLeftGroup}>
           <TouchableOpacity style={styles.headerLeft} onPress={() => navigation?.goBack?.()}>
-            <Text style={styles.headerIcon}>{'‹'}</Text>
+            <AntDesign name="left" size={24} color="white" />
           </TouchableOpacity>
           <View style={styles.profileContainer}>
             <Image source={require('../assets/kim.png')} style={styles.profileImage} />

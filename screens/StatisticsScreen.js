@@ -1,4 +1,3 @@
-// Statistics_Page.js
 import React, { useMemo, useState } from 'react';
 import {
   View,
@@ -229,7 +228,7 @@ export default function Statistics_Page({ navigation }) {
       <View style={styles.header}>
         <View style={styles.headerLeftGroup}>
           <TouchableOpacity style={styles.headerLeft} onPress={() => navigation?.goBack?.()}>
-            <Text style={styles.headerIcon}>{'‹'}</Text>
+            <AntDesign name="left" size={24} color="white" />
           </TouchableOpacity>
           <View style={styles.profileContainer}>
             <Image

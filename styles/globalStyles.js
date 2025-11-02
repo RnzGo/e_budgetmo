@@ -1078,14 +1078,19 @@ const globalStyles = {
     },
   }),
 
-  ChangeProfileModal: StyleSheet.create({
+  ChangeModal: StyleSheet.create({
     overlay: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: 'rgba(0,0,0,0.45)',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     container: {
       backgroundColor: '#FFF',
       borderRadius: 12,
+      width: '92%',
+      maxWidth: 420,
+      maxHeight: '90%',
       padding: 16,
       elevation: 8,
       shadowColor: '#000',
@@ -1111,6 +1116,19 @@ const globalStyles = {
       width: 100,
       height: 100,
       borderRadius: 50,
+    },
+    label: {
+      fontSize: 16,
+      fontWeight: '500',
+      marginBottom: 4,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: '#ddd',
+      borderRadius: 8,
+      padding: 12,
+      fontSize: 16,
+      marginBottom: 12,
     },
     uploadButton: {
       marginLeft: 16,
@@ -1411,6 +1429,80 @@ const globalStyles = {
     },
   }),
 
+AccountInformation: StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: 'white',
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: '#6CA16B',
+      paddingHorizontal: 20,
+      paddingVertical: 15,
+      paddingTop: 60,
+    },
+    backButton: {
+      padding: 5,
+    },
+    headerTitle: {
+      color: 'white',
+      fontSize: 30,
+      fontWeight: 'bold',
+    },
+    placeholder: {
+      width: 28,
+    },
+    contentContainer: {
+      flex: 1,
+      paddingHorizontal: 20,
+      paddingTop: 20,
+    },
+    sectionContainer: {
+      marginBottom: 25,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    section: {
+      marginBottom: 25,
+      flexDirection: 'column',
+      flex: 1,
+    },
+    profileContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    profileImage: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      marginRight: 12,
+    },
+    changeButton: {
+      backgroundColor: '#c1c1c1',
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 36,
+      marginLeft: 12,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#3F7D20',
+      marginBottom: 10,
+    },
+    label: {
+      fontSize: 16,
+      color: '#333333',
+      lineHeight: 22,
+    },
+  }),
+
   AboutScreen: StyleSheet.create({
     container: {
       flex: 1,
@@ -1493,6 +1585,61 @@ const globalStyles = {
       fontStyle: 'italic',
     },
   }),
+  
+  ContactUs: StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: 'white',
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: '#6CA16B',
+      paddingHorizontal: 20,
+      paddingVertical: 15,
+      paddingTop: 60,
+    },
+      section: {
+      marginBottom: 25,
+    },
+      sectionTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      },
+    backButton: {
+      padding: 5,
+    },
+    headerTitle: {
+      color: 'white',
+      fontSize: 30,
+      fontWeight: 'bold',
+    },
+    contentContainer: {
+      flex: 1,
+      paddingHorizontal: 20,
+      paddingTop: 20,
+    },
+    appTitle: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: '#3F7D20',
+      textAlign: 'center',
+      marginBottom: 15,
+    },
+    description: {
+      fontSize: 16,
+      color: '#333333',
+      lineHeight: 22,
+      textAlign: 'center',
+    },
+    socialButton: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 8,
+    }
+  }),
 
   LoginScreen: StyleSheet.create({
     container: { 
@@ -1524,7 +1671,7 @@ const globalStyles = {
       marginBottom: 30,
       textAlign: 'left',
     },
-        label: {
+    label: {
       fontSize: 16,
       fontWeight: '600',
       color: '#333',

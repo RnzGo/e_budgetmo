@@ -5,6 +5,7 @@ import globalStyles from '../styles/globalStyles';
 import AddIncomeModal from '../components/AddIncomeModal';
 import AddExpenseModal from '../components/AddExpenseModal';
 import { AntDesign, MaterialIcons, FontAwesome5, Feather } from '@expo/vector-icons';
+import { useUser } from '../context/UserContext';
 import { Svg, Circle, G } from 'react-native-svg';
 
 export default function HomeScreen({ navigation }) {
@@ -16,8 +17,9 @@ export default function HomeScreen({ navigation }) {
   const incomePercentage = total > 0 ? (finance.income / total) * 100 : 0;
   const expensePercentage = total > 0 ? (finance.expense / total) * 100 : 0;
 
-  const user = {
-    name: 'Kim Gaeul',
+  const { user } = useUser();
+  const userView = {
+    name: user?.name ?? 'User',
     balance: finance.balance,
     income: Math.round(incomePercentage),
     expense: Math.round(expensePercentage),
@@ -65,10 +67,10 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.header}>
           <View style={styles.profileContainer}>
             <Image
-              source={require('../assets/kim.png')}
+              source={user?.profilePicture ? { uri: user.profilePicture } : require('../assets/kim.png')}
               style={styles.profileImage}
             />
-            <Text style={styles.userName}>{user.name}</Text>
+            <Text style={styles.userName}>{userView?.name ?? 'User'}</Text>
           </View>
           <TouchableOpacity 
           style={styles.settingsButton}
@@ -125,14 +127,14 @@ export default function HomeScreen({ navigation }) {
               styles.centerPercentage,
               isEmpty ? { color: '#999' } : styles.incomePercentage
             ]}>
-              {user.income}%
+              {user?.income ?? 0}%
             </Text>
             <Text style={styles.centerLabel}>Income</Text>
             <Text style={[
               styles.centerPercentage,
               isEmpty ? { color: '#999' } : styles.expensePercentage
             ]}>
-              {user.expense}%
+              {user?.expense ?? 0}%
             </Text>
             <Text style={styles.centerLabel}>Expenses</Text>
           </View>

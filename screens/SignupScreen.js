@@ -1,8 +1,28 @@
-import { View, Text, TextInput, TouchableOpacity, StatusBar } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StatusBar, Alert } from 'react-native';
 import globalStyles from '../styles/globalStyles';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useUser } from '../context/UserContext';
 
 export default function SignUpScreen({ navigation }) {
+  const styles = globalStyles.SignupScreen;
+  const { signup } = useUser();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  function handleSignup() {
+    if (!name.trim() || !email.trim() || !password) {
+      Alert.alert('Missing fields', 'Please fill in all fields to continue.');
+      return;
+    }
+    // explicitly set profilePicture to null so the app shows the bundled kim.png as default
+    signup({ name: name.trim(), email: email.trim(), password, profilePicture: null });
+    navigation.navigate('Home');
+  }
+
+  const disabled = !name.trim() || !email.trim() || !password;
+
   return (
     <LinearGradient
       colors={['#6CA16B', '#8BB78A', '#A8CFA7']}
@@ -24,6 +44,8 @@ export default function SignUpScreen({ navigation }) {
             style={styles.input}
             placeholder="Kim Gaeul"
             placeholderTextColor="#999"
+            value={name}
+            onChangeText={setName}
           />
           <View style={styles.underline} />
         </View>
@@ -37,6 +59,8 @@ export default function SignUpScreen({ navigation }) {
             placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
           />
           <View style={styles.underline} />
         </View>
@@ -49,14 +73,17 @@ export default function SignUpScreen({ navigation }) {
             placeholder="Enter your password"
             placeholderTextColor="#999"
             secureTextEntry
+            value={password}
+            onChangeText={setPassword}
           />
           <View style={styles.underline} />
         </View>
 
         {/* Sign Up Button */}
         <TouchableOpacity 
-          style={styles.button}
-          onPress={() => navigation.navigate('Home')}
+          style={[styles.button, disabled ? { opacity: 0.6 } : {}]}
+          onPress={handleSignup}
+          disabled={disabled}
         >
           <Text style={styles.buttonText}>Sign Up</Text>
         </TouchableOpacity>

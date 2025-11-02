@@ -98,7 +98,7 @@ function TransactionScreen({ navigation }) {
           <TouchableOpacity
             style={styles.headerLeft}
             onPress={() => navigation?.goBack?.()}>
-            <Text style={styles.headerIcon}>{'‹'}</Text>
+            <AntDesign name="left" size={24} color="white" />
           </TouchableOpacity>
 
           <View style={styles.profileContainer}>

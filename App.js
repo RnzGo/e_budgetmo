@@ -11,18 +11,20 @@ import SettingsScreen from './screens/SettingsScreen';
 import AccountInformation from './screens/AccountInformation';
 import AboutScreen from './screens/AboutScreen';
 import ContactUs from './screens/ContactUs';
-import Statistics_Page from './screens/Statistics_Page';
+import StatisticsScreen from './screens/StatisticsScreen';
 import GoalsScreen from './screens/GoalsScreen';
 import TransactionScreen from './screens/TransactionScreen';
 import MonthYearPicker from './components/MonthYearPicker';
 import { FinanceProvider } from './context/FinanceContext';
+import { UserProvider } from './context/UserContext';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <FinanceProvider>
-      <NavigationContainer>
+    <UserProvider>
+      <FinanceProvider>
+        <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Onboarding1" component={Onboarding1} />
         <Stack.Screen name="Onboarding2" component={Onboarding2} />
@@ -35,12 +37,13 @@ export default function App() {
     <Stack.Screen name="AccountInformation" component={AccountInformation} />
   <Stack.Screen name="ContactUs" component={ContactUs} />
         <Stack.Screen name="About" component={AboutScreen} />
-        <Stack.Screen name="Statistics_Page" component={Statistics_Page} />
+  <Stack.Screen name="Statistics_Page" component={StatisticsScreen} />
         <Stack.Screen name="GoalsScreen" component={GoalsScreen} />
         <Stack.Screen name="TransactionScreen" component={TransactionScreen} />
         <Stack.Screen name="MonthYearPicker" component={MonthYearPicker} />
         </Stack.Navigator>
-      </NavigationContainer>
-    </FinanceProvider>
+        </NavigationContainer>
+      </FinanceProvider>
+    </UserProvider>
   );
 }

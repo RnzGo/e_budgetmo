@@ -21,7 +21,7 @@ export default function SettingsScreen({ navigation }){
     {
       title: 'Log Out',
       icon: <AntDesign name="logout" size={24} color="#EB4D4B" />,
-      onPress: () => navigation.navigate('Welcome'),
+      onPress: () => navigation.navigate('Login'),
     }
   ];
 

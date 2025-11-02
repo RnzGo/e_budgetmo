@@ -1,8 +1,28 @@
-import { View, Text, Image, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ScrollView, Platform, StatusBar, Linking } from 'react-native';
 import globalStyles from '../styles/globalStyles';
 import { AntDesign, MaterialIcons, FontAwesome5, Feather } from '@expo/vector-icons';
 
 export default function ContactUs({ navigation }) {
+
+  const openFacebook = async () => {
+    const url = 'https://www.facebook.com/albertrenz.pineda';
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) await Linking.openURL(url);
+    } catch (e) {
+      console.warn('Could not open Facebook URL', e);
+    }
+  };
+
+  const openLinkedIn = async () => {
+    const url = 'https://www.linkedin.com/in/carl-gabriel-ong-17b1aa317/?originalSubdomain=ph';
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) await Linking.openURL(url);
+    } catch (e) {
+      console.warn('Could not open LinkedIn URL', e);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -38,8 +58,21 @@ export default function ContactUs({ navigation }) {
 
        <View style={styles.section}>
         <Text style={styles.sectionTitle}>Socials:</Text>
-        <Text style={styles.team}>Facebook</Text>
-        <Text style={styles.team}>Linkedln</Text>
+        <TouchableOpacity
+          style={styles.socialButton}
+          onPress={openFacebook}
+        >
+          <Text style={styles.team}>Facebook</Text>
+          <Feather name="chevron-right" size={20} color="#3F7D20" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.socialButton}
+          onPress={openLinkedIn}
+        >
+          <Text style={styles.team}>LinkedIn</Text>
+          <Feather name="chevron-right" size={20} color="#3F7D20" />
+        </TouchableOpacity>
       </View>
       </View>
       </View>
