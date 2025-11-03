@@ -34,10 +34,23 @@ export default function HomeScreen({ navigation }) {
     .filter((e) => e.type === 'expense')
     .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
 
-  // Calculate percentages based on current-month totals
+  // Calculate percentages. By design we show expense as a percent of income
+  // (so 1500 expense on 5000 income = 30%) and the remaining income as the
+  // income percentage (70%). If there's no income for the month, fall back
+  // to using income+expense as the denominator (previous behavior).
   const total = monthlyIncome + monthlyExpense;
-  const incomePercentage = total > 0 ? (monthlyIncome / total) * 100 : 0;
-  const expensePercentage = total > 0 ? (monthlyExpense / total) * 100 : 0;
+  let incomePercentage = 0;
+  let expensePercentage = 0;
+
+  if (monthlyIncome > 0) {
+    // Expense relative to income (cap at 100%). Income is the remainder.
+    expensePercentage = Math.min((monthlyExpense / monthlyIncome) * 100, 100);
+    incomePercentage = Math.max(100 - expensePercentage, 0);
+  } else if (total > 0) {
+    // No income this month; use the previous total-based approach.
+    incomePercentage = (monthlyIncome / total) * 100;
+    expensePercentage = (monthlyExpense / total) * 100;
+  }
 
   const { user } = useUser();
   const userView = {
@@ -62,10 +75,12 @@ export default function HomeScreen({ navigation }) {
   const strokeWidth = outerR - innerR; // 30px thick donut
   
   // Data for the segments
-  const isEmpty = total === 0;
+  const isEmpty = total === 0 && monthlyIncome === 0;
+  // Use monthly values so chart reflects the current month, and clamp percentages
+  // to the [0,100] range to avoid drawing issues when values overflow.
   const data = [
-    { percentage: incomePercentage, value: finance.income, label: 'Income', color: isEmpty ? '#CCCCCC' : '#71c45a' },
-    { percentage: expensePercentage, value: finance.expense, label: 'Expenses', color: isEmpty ? '#CCCCCC' : '#eb4d4b' }
+    { percentage: Math.max(0, Math.min(incomePercentage, 100)), value: monthlyIncome, label: 'Income', color: isEmpty ? '#CCCCCC' : '#71c45a' },
+    { percentage: Math.max(0, Math.min(expensePercentage, 100)), value: monthlyExpense, label: 'Expenses', color: isEmpty ? '#CCCCCC' : '#eb4d4b' }
   ];
 
   // Calculate circumference and segment lengths
@@ -73,10 +88,14 @@ export default function HomeScreen({ navigation }) {
   
   let currentOffset = 0;
   const segments = data.map((item) => {
-    const segmentLength = (item.percentage / 100) * circumference;
+    // ensure segment length is within [0, circumference]
+    const pct = Math.max(0, Math.min(item.percentage, 100));
+    const segmentLength = (pct / 100) * circumference;
+    const remaining = Math.max(0, circumference - segmentLength);
     const segment = {
       ...item,
-      strokeDasharray: `${segmentLength} ${circumference - segmentLength}`,
+      strokeDasharray: `${segmentLength.toFixed(2)} ${remaining.toFixed(2)}`,
+      // negative offset so successive segments are drawn after the previous one
       strokeDashoffset: -currentOffset
     };
     currentOffset += segmentLength;
