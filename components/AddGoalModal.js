@@ -16,6 +16,18 @@ import {
 import globalStyles from '../styles/globalStyles';
 import FullDatePicker from './FullDatePicker';
 
+export const GOAL_CATEGORIES = [
+  'Savings',
+  'Emergency',
+  'Vacation',
+  'Education',
+  'Investment',
+  'Bills',
+  'Entertainment',
+  'Property',
+  'Others',
+];
+
 export default function AddGoalModal({ visible, onClose, onSubmit }) {
   const title = 'Add New Goal';
 
@@ -30,15 +42,7 @@ export default function AddGoalModal({ visible, onClose, onSubmit }) {
   const [isCategoryCustom, setIsCategoryCustom] = useState(false);
   const categoryInputRef = useRef(null);
 
-  const CATEGORY_SUGGESTIONS = [
-    'Savings',
-    'Emergency',
-    'Vacation',
-    'Education',
-    'Investment',
-    'Bills',
-    'Custom',
-  ];
+  
 
   useEffect(() => {
     if (!visible) {
@@ -112,22 +116,44 @@ export default function AddGoalModal({ visible, onClose, onSubmit }) {
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Category:</Text>
                   <View style={styles.relativeWrapper}>
-                    {/* Always allow typing into category - suggestions will filter as user types */}
-                    <TextInput
-                      ref={categoryInputRef}
-                      style={[styles.input, isCategoryCustom ? null : styles.pseudoInput]}
-                      placeholder={isCategoryCustom ? 'Enter custom category' : 'Select category'}
-                      placeholderTextColor="#999"
-                      value={goalCategory}
-                      onChangeText={(t) => { setGoalCategory(t); setShowCategorySuggestions(true); setIsCategoryCustom(true); }}
-                      onFocus={() => { setShowCategorySuggestions(true); setIsCategoryCustom(true); }}
-                    />
+                    {/* Category input: if custom mode allow typing, otherwise show a touchable that opens suggestions */}
+                    {isCategoryCustom ? (
+                      <TextInput
+                        ref={categoryInputRef}
+                        style={[styles.input]}
+                        placeholder="Enter custom category"
+                        placeholderTextColor="#999"
+                        value={goalCategory}
+                        editable={true}
+                        onChangeText={(t) => setGoalCategory(t)}
+                      />
+                    ) : (
+                      <TouchableOpacity
+                        style={[styles.input, styles.pseudoInput]}
+                        onPress={() => setShowCategorySuggestions(true)}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={{ color: goalCategory ? '#111' : '#999' }}>{goalCategory || 'Select category'}</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {/* Clear button */}
+                    <TouchableOpacity
+                      onPress={() => { setGoalCategory(''); setShowCategorySuggestions(false); setIsCategoryCustom(false); }}
+                      style={{ position: 'absolute', right: 8, top: 10, padding: 6 }}
+                      accessibilityLabel="Clear category"
+                    >
+                      <Text style={{ color: '#999' }}>Clear</Text>
+                    </TouchableOpacity>
 
                     {showCategorySuggestions && (
                       <View style={styles.suggestionsBox}>
                         {/* Non-virtualized list to avoid nesting VirtualizedLists inside a ScrollView */}
                         <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled={true} style={{ maxHeight: 160 }}>
-                          {CATEGORY_SUGGESTIONS.filter((s) => s.toLowerCase().includes((goalCategory || '').toLowerCase())).map((item) => (
+                          {GOAL_CATEGORIES
+                            .filter((s) => s.toLowerCase().includes((goalCategory || '').toLowerCase()))
+                            .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+                            .map((item) => (
                             <TouchableOpacity
                               key={item}
                               style={styles.suggestionItem}

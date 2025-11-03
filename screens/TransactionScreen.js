@@ -11,6 +11,7 @@ import {
 import globalStyles from '../styles/globalStyles';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { useFinance } from '../context/FinanceContext';
+import { useUser } from '../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AddIncomeModal from '../components/AddIncomeModal';
 import AddExpenseModal from '../components/AddExpenseModal';
@@ -87,6 +88,10 @@ function TransactionScreen({ navigation }) {
 
     return [...existing, ...mapped];
   }, [entries, goals]);
+  const { user } = useUser();
+  const userView = {
+    name: user?.name ?? 'User',
+  };
   const [incomeModalVisible, setIncomeModalVisible] = React.useState(false);
   const [expenseModalVisible, setExpenseModalVisible] = React.useState(false);
 
@@ -103,10 +108,10 @@ function TransactionScreen({ navigation }) {
 
           <View style={styles.profileContainer}>
             <Image
-              source={require('../assets/kim.png')}
+              source={user?.profilePicture ? { uri: user.profilePicture } : require('../assets/kim.png')}
               style={styles.profileImage}
             />
-            <Text style={styles.userName}>Kim Gaeul</Text>
+            <Text style={styles.userName}>{userView?.name ?? 'User'}</Text>
           </View>
         </View>
 
@@ -218,4 +223,3 @@ function TransactionScreen({ navigation }) {
 }
 
 export default TransactionScreen;
-

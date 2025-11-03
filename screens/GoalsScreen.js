@@ -4,8 +4,9 @@ import { View, Text, ScrollView, Platform, TouchableOpacity, Image, StatusBar, T
 import globalStyles from '../styles/globalStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons, FontAwesome5, AntDesign } from '@expo/vector-icons';
-import AddGoalModal from '../components/AddGoalModal';
+import AddGoalModal, { GOAL_CATEGORIES } from '../components/AddGoalModal';
 import { useFinance } from '../context/FinanceContext';
+import {useUser} from '../context/UserContext';
 
 const goalsData = [];
 
@@ -18,6 +19,10 @@ export default function GoalsScreen({ navigation }) {
   const [expandedGoalId, setExpandedGoalId] = useState(null);
   const [amountInputs, setAmountInputs] = useState({}); // keyed by goal id
   const { addEntry } = useFinance();
+  const { user } = useUser();
+  const userView = {
+    name: user?.name ?? 'User',
+  };
 
   // Load saved goals on mount
   useEffect(() => {
@@ -169,8 +174,8 @@ export default function GoalsScreen({ navigation }) {
     setGoals((prev) => [goal, ...prev]);
   }
 
-  // Predefined category order to display. 'Others' will contain uncategorized or custom categories.
-  const CATEGORY_ORDER = ['Savings', 'Emergency', 'Vacation', 'Education', 'Investment', 'Bills'];
+  // Dynamically determine categories from goals and sort them alphabetically.
+  // 'Others' will contain uncategorized or empty categories and will be shown last.
 
   function renderGoalCard(goal) {
     const past = isPastDue(goal);
@@ -244,12 +249,18 @@ export default function GoalsScreen({ navigation }) {
       {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.headerLeftGroup}>
-          <TouchableOpacity style={styles.headerLeft} onPress={() => navigation?.goBack?.()}>
+          <TouchableOpacity
+            style={styles.headerLeft}
+            onPress={() => navigation?.goBack?.()}>
             <AntDesign name="left" size={24} color="white" />
           </TouchableOpacity>
+
           <View style={styles.profileContainer}>
-            <Image source={require('../assets/kim.png')} style={styles.profileImage} />
-            <Text style={styles.userName}>Kim Gaeul</Text>
+            <Image
+              source={user?.profilePicture ? { uri: user.profilePicture } : require('../assets/kim.png')}
+              style={styles.profileImage}
+            />
+            <Text style={styles.userName}>{userView?.name ?? 'User'}</Text>
           </View>
         </View>
         <TouchableOpacity 
@@ -269,19 +280,31 @@ export default function GoalsScreen({ navigation }) {
 
         <ScrollView showsVerticalScrollIndicator={false}>
           {(() => {
-            // group goals by predefined categories; uncategorized/custom go to 'Others'
+
+            // Start from predefined categories (from AddGoalModal) and include any additional categories found in goals.
+            const predefined = (GOAL_CATEGORIES || []).filter((c) => c && c.toString().trim().toLowerCase() !== 'others');
+            const catsSet = new Set(predefined);
+            (goals || []).forEach((g) => {
+              const c = (g.category || '').toString().trim();
+              if (c && c.toLowerCase() !== 'others') catsSet.add(c);
+            });
+
+            // Create a sorted array of categories (case-insensitive)
+            const sortedCats = Array.from(catsSet).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+            // Prepare groups object and collect 'Others' for uncategorized goals
             const groups = {};
-            CATEGORY_ORDER.forEach((c) => { groups[c] = []; });
+            sortedCats.forEach((c) => { groups[c] = []; });
             groups['Others'] = [];
 
-            goals.forEach((g) => {
-              const cat = (g.category || '').trim();
+            (goals || []).forEach((g) => {
+              const cat = (g.category || '').toString().trim();
               if (cat && groups.hasOwnProperty(cat)) groups[cat].push(g);
               else groups['Others'].push(g);
             });
 
-            // render each category section in order
-            return [...CATEGORY_ORDER, 'Others'].map((cat) => (
+            // Render sorted categories first, then 'Others' last
+            return [...sortedCats, 'Others'].map((cat) => (
               <View key={cat} style={{ marginBottom: 12 }}>
                 <Text style={{ fontSize: 18, fontWeight: '800', color: '#374151', marginBottom: 6 }}>{cat}</Text>
                 {groups[cat].length === 0 ? (

@@ -16,7 +16,7 @@ import globalStyles from '../styles/globalStyles';
 import FullDatePicker from './FullDatePicker';
 
 // Expense-specific category suggestions
-const EXPENSE_SUGGESTIONS = ['Food', 'Transport', 'Rent', 'Utilities', 'Entertainment', 'Healthcare', 'Shopping', 'Other'];
+const EXPENSE_SUGGESTIONS = ['Food', 'Transport', 'Rent', 'Utilities', 'Entertainment', 'Healthcare', 'Shopping', 'Bills', 'Education', 'Travel', 'Dining', 'Groceries'];
 
 export default function AddExpenseModal({ visible, onClose = () => {}, title, onSubmit = () => {} }) {
   const modalTitle = title || 'Add Expense';
@@ -102,19 +102,30 @@ export default function AddExpenseModal({ visible, onClose = () => {}, title, on
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Category:</Text>
                   <View style={styles.relativeWrapper}>
-                    <TextInput
+                    <TouchableOpacity
                       style={styles.input}
-                      placeholder="Enter category"
-                      placeholderTextColor="#999"
-                      value={category}
-                      onChangeText={(t) => { setCategory(t); setShowCategorySuggestions(true); }}
-                      onFocus={() => { setShowCategorySuggestions(true); }}
-                    />
+                      onPress={() => { setShowCategorySuggestions(true); }}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={{ color: category ? '#111' : '#999' }}>{category || 'Select category'}</Text>
+                    </TouchableOpacity>
+
+                    {/* Clear button */}
+                    <TouchableOpacity
+                      onPress={() => { setCategory(''); setShowCategorySuggestions(false); }}
+                      style={{ position: 'absolute', right: 8, top: 10, padding: 6 }}
+                      accessibilityLabel="Clear category"
+                    >
+                      <Text style={{ color: '#999' }}>Clear</Text>
+                    </TouchableOpacity>
 
                     {showCategorySuggestions && (
                       <View style={styles.suggestionsBox}>
                         <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled={true} style={{ maxHeight: 160 }}>
-                          {EXPENSE_SUGGESTIONS.filter((s) => s.toLowerCase().includes((category || '').toLowerCase())).map((item) => (
+                          {EXPENSE_SUGGESTIONS
+                            .filter((s) => s.toLowerCase().includes((category || '').toLowerCase()))
+                            .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+                            .map((item) => (
                             <TouchableOpacity key={item} style={styles.suggestionItem} onPress={() => { setCategory(item); setShowCategorySuggestions(false); }}>
                               <Text>{item}</Text>
                             </TouchableOpacity>

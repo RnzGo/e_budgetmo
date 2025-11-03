@@ -16,11 +16,12 @@ import Svg, { G, Path, Circle, Text as SvgText } from 'react-native-svg';
 import MonthYearPicker from '../components/MonthYearPicker';             
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { useFinance } from '../context/FinanceContext';
+import { useUser } from '../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Responsive helpers (simple normalize based on screen width)
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const guidelineBaseWidth = 375; // iPhone 8 width baseline
+const guidelineBaseWidth = 375;
 const scale = SCREEN_WIDTH / guidelineBaseWidth;
 function normalize(size) {
   const newSize = size * scale;
@@ -222,20 +223,28 @@ export default function Statistics_Page({ navigation }) {
     setPickerTempSelection(null);
   };
 
+  const { user } = useUser();
+  const userView = {
+    name: user?.name ?? 'User',
+  };
+
   return (
     <View style={[styles.root, { paddingTop: topPadding }]}> 
       {/* Header area */}
       <View style={styles.header}>
         <View style={styles.headerLeftGroup}>
-          <TouchableOpacity style={styles.headerLeft} onPress={() => navigation?.goBack?.()}>
+          <TouchableOpacity
+            style={styles.headerLeft}
+            onPress={() => navigation?.goBack?.()}>
             <AntDesign name="left" size={24} color="white" />
           </TouchableOpacity>
+
           <View style={styles.profileContainer}>
             <Image
-              source={require('../assets/kim.png')}
+              source={user?.profilePicture ? { uri: user.profilePicture } : require('../assets/kim.png')}
               style={styles.profileImage}
             />
-            <Text style={styles.userName}>Kim Gaeul</Text>
+            <Text style={styles.userName}>{userView?.name ?? 'User'}</Text>
           </View>
         </View>
         <TouchableOpacity 

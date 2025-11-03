@@ -17,9 +17,9 @@ export default function WelcomeScreen({ navigation }) {
       <View style={styles.content}>
         <TouchableOpacity 
           style={styles.button}
-          onPress={() => navigation.navigate('Signup')}>
+          onPress={() => navigation.navigate('Login')}>
       <Text style={styles.buttonText}>
-        Sign up with Email
+        Login
           </Text>
         </TouchableOpacity>
       </View>
@@ -27,11 +27,11 @@ export default function WelcomeScreen({ navigation }) {
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          Already have an account?{' '}
+          Don't have an account?{' '}
           <Text 
             style={styles.link} 
-            onPress={() => navigation.navigate('Login')}>
-            Login
+            onPress={() => navigation.navigate('Signup')}>
+            Sign Up
           </Text>
         </Text>
       </View>

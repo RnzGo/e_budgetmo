@@ -66,7 +66,11 @@ export function UserProvider({ children }) {
     setUser((prev) => ({ ...prev, profilePicture: uri }));
   }
 
-  const value = { user, signup, login, updateName, updateEmail, updatePassword, updateProfilePicture };
+  function resetUser() {
+    setUser({ name: null, email: null, password: null, profilePicture: null });
+  }
+
+  const value = { user, signup, login, updateName, updateEmail, updatePassword, updateProfilePicture, resetUser };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }

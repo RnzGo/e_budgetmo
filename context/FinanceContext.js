@@ -82,7 +82,11 @@ export function FinanceProvider({ children }) {
     });
   }
 
-  const value = { finance, addEntry };
+  function resetFinance() {
+    setFinance({ income: 0, expense: 0, balance: 0, entries: [] });
+  }
+
+  const value = { finance, addEntry, resetFinance };
 
   return <FinanceContext.Provider value={value}>{children}</FinanceContext.Provider>;
 }

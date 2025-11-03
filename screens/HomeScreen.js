@@ -6,16 +6,38 @@ import AddIncomeModal from '../components/AddIncomeModal';
 import AddExpenseModal from '../components/AddExpenseModal';
 import { AntDesign, MaterialIcons, FontAwesome5, Feather } from '@expo/vector-icons';
 import { useUser } from '../context/UserContext';
-import { Svg, Circle, G } from 'react-native-svg';
+import { Svg, Circle } from 'react-native-svg';
 
 export default function HomeScreen({ navigation }) {
   // Shared finance state (provided by FinanceProvider)
   const { finance, addEntry } = useFinance();
 
-  // Calculate percentages based on actual amounts
-  const total = (finance.income || 0) + (finance.expense || 0);
-  const incomePercentage = total > 0 ? (finance.income / total) * 100 : 0;
-  const expensePercentage = total > 0 ? (finance.expense / total) * 100 : 0;
+  // Limit displayed data to the current month: filter entries by month/year
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const monthlyEntries = (finance.entries || []).filter((entry) => {
+    try {
+      const d = new Date(entry.date);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const monthlyIncome = monthlyEntries
+    .filter((e) => e.type === 'income')
+    .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+  const monthlyExpense = monthlyEntries
+    .filter((e) => e.type === 'expense')
+    .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+  // Calculate percentages based on current-month totals
+  const total = monthlyIncome + monthlyExpense;
+  const incomePercentage = total > 0 ? (monthlyIncome / total) * 100 : 0;
+  const expensePercentage = total > 0 ? (monthlyExpense / total) * 100 : 0;
 
   const { user } = useUser();
   const userView = {
@@ -127,35 +149,34 @@ export default function HomeScreen({ navigation }) {
               styles.centerPercentage,
               isEmpty ? { color: '#999' } : styles.incomePercentage
             ]}>
-              {user?.income ?? 0}%
+                {userView.income ?? 0}%
             </Text>
             <Text style={styles.centerLabel}>Income</Text>
             <Text style={[
               styles.centerPercentage,
               isEmpty ? { color: '#999' } : styles.expensePercentage
             ]}>
-              {user?.expense ?? 0}%
+              {userView.expense ?? 0}%
             </Text>
             <Text style={styles.centerLabel}>Expenses</Text>
           </View>
         </View>
 
-        {/* Income/Expense Percentage - you can remove this if you want since percentages are in center now */}
+        {/* Income and Expense Summary */}
         <View style={styles.percentageContainer}>
           <View style={styles.percentageItem}>
             <View style={[styles.percentageDot, { backgroundColor: isEmpty ? '#CCCCCC' : '#71c45a' }]} />
-            <Text style={styles.percentageText}>₱ {(finance.income || 0).toLocaleString()} Total Monthly Income</Text>
+            <Text style={styles.percentageText}>₱ {(monthlyIncome || 0).toLocaleString()} Total Monthly Income</Text>
           </View>
           <View style={styles.percentageItem}>
             <View style={[styles.percentageDot, { backgroundColor: isEmpty ? '#CCCCCC' : '#eb4d4b' }]} />
-            <Text style={styles.percentageText}>₱ {(finance.expense || 0).toLocaleString()} Total Monthly Expenses</Text>
+            <Text style={styles.percentageText}>₱ {(monthlyExpense || 0).toLocaleString()} Total Monthly Expenses</Text>
           </View>
         </View>
         </View>
 
         {/* Quick Shortcuts - Pushed to bottom */}
         <View style={styles.bottomSection}>
-        {/* Divider */}
         <View style={styles.divider} />
 
         <Text style={styles.shortcutsTitle}>Quick Shortcuts</Text>
@@ -178,21 +199,21 @@ export default function HomeScreen({ navigation }) {
             <Text style={[styles.shortcutText, styles.expenseText]}>Add Expenses</Text>
           </TouchableOpacity>
           
-          {/* View Goals - Blue */}
+          {/* View Goals - Orange */}
           <TouchableOpacity style={[styles.shortcutButton, styles.goalsButton]}
                             onPress={() => navigation.navigate('GoalsScreen')}>
             <FontAwesome5 name="bullseye" size={24} color="#FFFFFF" />
             <Text style={[styles.shortcutText, styles.goalsText]}>View Goals</Text>
           </TouchableOpacity>
-          
-          {/* Transactions - Purple */}
+
+          {/* Transactions - Blue */}
           <TouchableOpacity style={[styles.shortcutButton, styles.transactionsButton]}
                             onPress={() => navigation.navigate('TransactionScreen')}>
             <MaterialIcons name="list-alt" size={24} color="#FFFFFF" />
             <Text style={[styles.shortcutText, styles.transactionsText]}>Transactions</Text>
           </TouchableOpacity>
           
-          {/* View Statistics - Orange */}
+          {/* View Statistics - Purple */}
           <TouchableOpacity style={[styles.shortcutButton, styles.statisticsButton]} 
                             onPress={() => navigation.navigate('Statistics_Page')}>
             <Feather name="bar-chart" size={24} color="#FFFFFF" />

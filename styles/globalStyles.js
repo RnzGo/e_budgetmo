@@ -214,19 +214,19 @@ const globalStyles = {
       color: '#FFFFFF',
     },
     goalsButton: {
-      backgroundColor: '#EA580C',
+      backgroundColor: '#ff7225ff',
     },
     goalsText: {
       color: '#FFFFFF',
     },
     transactionsButton: {
-      backgroundColor: '#A934DB',
+      backgroundColor: '#2D6CDF',
     },
     transactionsText: {
       color: '#FFFFFF',
     },
     statisticsButton: {
-      backgroundColor: '#F59E0B',
+      backgroundColor: '#A934DB',
     },
     statisticsText: {
       color: '#FFFFFF',
